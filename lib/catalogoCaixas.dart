@@ -124,64 +124,69 @@ class _Teste extends State<Teste> {
   }
 
   void listarDadosInstrumentais(List<dynamic> ids) {
-    print('entrou em listarDadosInstrumentais $ids');
-    List<List<dynamic>> batches = [];
-    final batchSize = 10; // Tamanho do lote (batch)
+  print('entrou em listarDadosInstrumentais $ids');
+  instrumentaisList = []; // Limpar a lista antes de adicioná-los novamente
+  checkboxValues = []; // Limpar a lista dos valores do checkbox
 
-    for (var i = 0; i < ids.length; i += batchSize) {
-      var end = i + batchSize;
-      var batchIds = ids.sublist(i, end < ids.length ? end : ids.length);
-      batches.add(batchIds);
-    }
+  Future.forEach(ids, (id) {
+    return FirebaseFirestore.instance
+        .collection("instrumentais")
+        .doc(id.toString())
+        .get()
+        .then((DocumentSnapshot snapshot) {
+      if (snapshot.exists) {
+        setState(() {
+          instrumentaisList.add(snapshot.data()); // Adicionar o instrumental à lista
+          checkboxValues.add(false); // Adicionar o valor do checkbox correspondente
+        });
+      } else {
+        print("O instrumental com o ID $id não foi encontrado.");
+      }
+    }).catchError((error) =>
+        print('Erro ao obter o dado do instrumental com o ID $id: $error'));
+  });
+}
 
-    Future.forEach(batches, (batchIds) {
-      return FirebaseFirestore.instance
-          .collection("instrumentais")
-          .where(FieldPath.documentId,
-              whereIn: batchIds.map((id) => id.toString()).toList())
-          .get()
-          .then((QuerySnapshot snapshot) {
-        if (snapshot.docs.isNotEmpty) {
-          setState(() {
-            instrumentaisList
-                .addAll(snapshot.docs.map((doc) => doc.data()).toList());
-            checkboxValues = List<bool>.filled(instrumentaisList.length, false);
-          });
-        } else {
-          print("A tabela Instrumentais está vazia.");
-        }
-      }).catchError((error) =>
-              print('Erro ao obter os dados da tabela Instrumentais: $error'));
-    });
-  }
+
 
   void adicionarArrayCaixaEmbalagem(List<dynamic> instrumentais) {
-    db
-        .collection("embalagem")
-        .orderBy("id", descending: true)
-        .limit(1)
-        .get()
-        .then((QuerySnapshot snapshot) {
-      if (snapshot.docs.isNotEmpty) {
-        int latestId = snapshot.docs[0]["id"];
-        String documentId = snapshot.docs[0].id;
+  db.collection("embalagem")
+      .orderBy("id", descending: true)
+      .limit(1)
+      .get()
+      .then((QuerySnapshot snapshot) {
+    if (snapshot.docs.isNotEmpty) {
+      int latestId = snapshot.docs[0]["id"] as int;
+      String documentId = snapshot.docs[0].id;
 
-        DocumentReference documentRef =
-            db.collection("embalagem").doc(documentId);
+      DocumentReference documentRef = db.collection("embalagem").doc(documentId);
 
-        documentRef.update(
-            {"instrumentais": FieldValue.arrayUnion(instrumentais)}).then((_) {
-          print("instrumentais adicionados com sucesso");
+      documentRef.get().then((DocumentSnapshot documentSnapshot) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        List<dynamic> existingInstrumentais = data["instrumentais"] ?? [];
+        List<dynamic> updatedInstrumentais = List.from(existingInstrumentais)..addAll(instrumentais);
+
+        documentRef.update({"instrumentais": updatedInstrumentais}).then((_) {
+          print("Instrumentais adicionados com sucesso");
         }).catchError((error) {
           print("Erro ao adicionar instrumentais: $error");
         });
-      } else {
-        print("A tabela Embalagem está vazia.");
-      }
-    }).catchError((error) {
-      print('Erro ao obter a embalagem mais recente: $error');
-    });
-  }
+      }).catchError((error) {
+        print("Erro ao obter o documento: $error");
+      });
+    } else {
+      print("A tabela Embalagem está vazia.");
+    }
+  }).catchError((error) {
+    print('Erro ao obter a embalagem mais recente: $error');
+  });
+}
+
+
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
