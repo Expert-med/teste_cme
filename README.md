@@ -1,6 +1,5 @@
 # teste_catalogo
-
-A new Flutter project.
+Um sistema de rastreabilidade de instrumentais de um CME
 
 ## Getting Started
 
