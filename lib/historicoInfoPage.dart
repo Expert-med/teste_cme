@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import 'gerarEtiquetaPage.dart';
+
 class historicoInfo extends StatefulWidget {
   final int idEmbalagem;
 
@@ -23,7 +25,6 @@ class _historicoInfo extends State<historicoInfo> {
   }
 
   void buscarDadosEmbalagem(int idEmbalagem) {
-    print(idEmbalagem);
     FirebaseFirestore.instance
         .collection("embalagem")
         .where("id", isEqualTo: idEmbalagem)
@@ -33,7 +34,7 @@ class _historicoInfo extends State<historicoInfo> {
         setState(() {
           embalagem.add(snapshot.docs[0].data() as Map<String, dynamic>);
           int idCaixa = embalagem[0]['idCaixa'];
-          buscarCaixaEmb(idCaixa);
+          buscarCaixaEmb(idCaixa, idEmbalagem);
         });
       } else {
         print("Não foram encontradas caixas no banco de dados.");
@@ -43,28 +44,76 @@ class _historicoInfo extends State<historicoInfo> {
     });
   }
 
-  void buscarCaixaEmb(int idCaixa) {
-    FirebaseFirestore.instance
-        .collection("caixas")
-        .where("id", isEqualTo: idCaixa)
+    Future<void> buscarCaixaEmb(int idCaixa, int idEmbalagem) async {
+    print(idEmbalagem);
+    if (idCaixa != 0) {
+      FirebaseFirestore.instance
+          .collection("caixas")
+          .where("id", isEqualTo: idCaixa)
+          .get()
+          .then((QuerySnapshot snapshot) {
+        if (snapshot.docs.isNotEmpty) {
+          var document = snapshot.docs[0];
+          if (document.exists) {
+            var data = document.data();
+            if (data != null && data is Map<String, dynamic> && data.containsKey('instrumentais')) {
+              List<dynamic> instrumentos = document.get('instrumentais');
+              setState(() {
+                listarDadosInstrumentais(instrumentos);
+                caixa.add(data as Map<String, dynamic>);
+              });
+            } else {
+              print("O campo 'instrumentais' não existe no documento: ${document.id}");
+            }
+          } else {
+            print("Documento não encontrado: ${document.id}");
+          }
+        } else {
+          print("Não foram encontrados tipos de instrumentais no banco de dados.");
+        }
+      }).catchError((error) {
+        print('Erro ao buscar os tipos de instrumentais: $error');
+      });
+    } else {
+      FirebaseFirestore.instance
+        .collection("embalagem")
+        .where("id", isEqualTo: idEmbalagem) // Replace idembalagem with the actual ID value you want to query
         .get()
         .then((QuerySnapshot snapshot) {
-      if (snapshot.docs.isNotEmpty) {
-        List<dynamic> instrumentos = snapshot.docs[0].get('instrumentais');
-        setState(() {
-          listarDadosInstrumentais(instrumentos);
-          caixa.add(snapshot.docs[0].data() as Map<String, dynamic>);
+          if (snapshot.docs.isNotEmpty) {
+            var document = snapshot.docs[0];
+            if (document.exists) {
+              var data = document.data();
+              if (data != null && data is Map<String, dynamic> && data.containsKey('instrumentais')) {
+              List<dynamic> instrumentos = [];
+              List<dynamic> instrumentaisData = document.get('instrumentais');
+              for (var instrumento in instrumentaisData) {
+                instrumentos.add(instrumento['id']);
+              }
+                setState(() {
+                  listarDadosInstrumentais(instrumentos);
+                  print(instrumentos);
+                  caixa.add(data as Map<String, dynamic>);
+                });
+              } else {
+                print("O campo 'instrumentais' não existe no documento: ");
+              }
+            } else {
+              print("Documento não encontrado: ${document.id}");
+            }
+          } else {
+            print("Não foram encontrados tipos de instrumentais no banco de dados.");
+          }
+        }).catchError((error) {
+          print('Erro ao buscar os tipos de instrumentais: $error');
         });
-      } else {
-        print(
-            "Não foram encontrados tipos de instrumentais no banco de dados.");
-      }
-    }).catchError((error) {
-      print('Erro ao buscar os tipos de instrumentais: $error');
-    });
+        }
   }
 
-  void listarDadosInstrumentais(List<dynamic> ids) {
+
+
+  Future<void> listarDadosInstrumentais(List<dynamic> ids) async {
+    print('print 6');
     print('entrou em listarDadosInstrumentais $ids');
     List<List<dynamic>> batches = [];
     final batchSize = 10; // Tamanho do lote (batch)
@@ -193,7 +242,7 @@ class _historicoInfo extends State<historicoInfo> {
                           Container(
                             alignment: Alignment.topLeft,
                             child: Text(
-                              ' ${embalagem['infoAdicionais'] ? ['dataAtual'] ?? 0}',
+                              ' ${embalagem['infoAdicionais'] ? ['dataAtual'] ?? 0}  | ${embalagem['infoAdicionais'] ? ['horaCriacao'] ?? 0}',
                               style: TextStyle(
                                 fontSize: 20,
                                 color: Colors.black54,
@@ -294,7 +343,7 @@ class _historicoInfo extends State<historicoInfo> {
                 String nomeCaixa = caixa['nome'];
 
                 // Restante do código para renderizar os dados do tipo
-
+                
                 return Container(
                   width: MediaQuery.of(context).size.width,
                   child: Padding(
@@ -348,6 +397,8 @@ class _historicoInfo extends State<historicoInfo> {
                             itemCount: instrumentaisList.length,
                             itemBuilder: (context, index) {
                               var instrumental = instrumentaisList[index];
+                              print('print 7');
+                              print(instrumentaisList);
                               // Renderizar os dados do instrumental aqui
                               return ListTile(
                                 title: Padding(
@@ -378,6 +429,50 @@ class _historicoInfo extends State<historicoInfo> {
                             },
                           ),
                         ),
+                        Center(
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Flexible(
+                                    child: SizedBox(
+                                      width: MediaQuery.of(context).size.width,
+                                      height: 70,
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => gerarEtiqueta(idEmbalagem: widget.idEmbalagem),
+                                  ),
+                                );
+                            },
+                            child: Text(
+                              "Gerar etiqueta",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              elevation: 10.0,
+                                backgroundColor:
+                                    Color.fromARGB(156, 0, 107, 57),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20.0, vertical: 20.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
                       ],
                     ),
                   ),

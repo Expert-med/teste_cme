@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase/firebase_options.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:intl/intl.dart';
 
 import 'gerarEtiquetaPage.dart';
 
@@ -24,6 +26,7 @@ class _AddObservacoes extends State<AddObservacoes> {
   TextEditingController _dataValidadeController = TextEditingController();
   TextEditingController _nomeFuncionarioController = TextEditingController();
   TextEditingController _observacoesController = TextEditingController();
+  TextEditingController _horaAtual = TextEditingController();
   List<Map<String, dynamic>> caixas = [];
 
   void adicionarArrayObservacoes() {
@@ -32,8 +35,13 @@ class _AddObservacoes extends State<AddObservacoes> {
     String nomeFuncionario = _nomeFuncionarioController.text;
     String observacoes = _observacoesController.text;
     String dataAtual = _dataAtualController.text;
-    
-    if (dataValidade == '' || nomeFuncionario == '' || observacoes == '' || dataAtual=='') {
+    String horaAtual = _horaAtual.text;
+
+    if (dataValidade == '' ||
+        nomeFuncionario == '' ||
+        observacoes == '' ||
+        dataAtual == '' ||
+        horaAtual == '') {
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -45,7 +53,7 @@ class _AddObservacoes extends State<AddObservacoes> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: Text('Continuar'),
+                child: Text('Continuar',style: TextStyle(color: Color.fromARGB(156, 0, 107, 57),)),
               ),
             ],
           );
@@ -57,6 +65,7 @@ class _AddObservacoes extends State<AddObservacoes> {
         'nomeFuncionario': nomeFuncionario,
         'observacoes': observacoes,
         'dataAtual': dataAtual,
+        'horaCriacao': horaAtual,
       };
 
       FirebaseFirestore.instance
@@ -77,34 +86,35 @@ class _AddObservacoes extends State<AddObservacoes> {
           }).catchError((error) {
             print("Erro ao atualizar os dados adicionais da caixa: $error");
           });
+
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Informações adicionadas com sucesso'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              gerarEtiqueta(idEmbalagem: int.parse(documentId)),
+                        ),
+                      );
+                    },
+                    child: Text('Continuar',style: TextStyle(color: Color.fromARGB(156, 0, 107, 57),)),
+                  ),
+                ],
+              );
+            },
+          );
         } else {
           print("A tabela Embalagem está vazia.");
         }
       }).catchError((error) {
         print('Erro ao obter a embalagem mais recente: $error');
       });
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title:
-                Text('Informações adicionadas com sucesso'),
-           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => gerarEtiqueta(idCaixa: widget.idCaixa),
-                  ),
-                );
-              },
-              child: Text('Continuar'),
-            ),
-          ],
-          );
-        },
-      );
     }
   }
 
@@ -119,7 +129,8 @@ class _AddObservacoes extends State<AddObservacoes> {
         '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
     return formattedDate;
   }
- String formatDate(String text) {
+
+  String formatDate(String text) {
     if (text.length >= 3 && text.substring(2, 3) != '/') {
       text = text.substring(0, 2) + '/' + text.substring(2);
     }
@@ -129,33 +140,47 @@ class _AddObservacoes extends State<AddObservacoes> {
     return text;
   }
 
+  String getCurrentTime() {
+    DateTime now = DateTime.now();
+    String formattedTime =
+        '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    return formattedTime;
+  }
+
   @override
   Widget build(BuildContext context) {
     _dataAtualController.text = getCurrentDate();
+    _horaAtual.text = getCurrentTime();
     String currentDate = getCurrentDate();
+
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 80,
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        centerTitle: false,
-        iconTheme: IconThemeData(
-          color: const Color.fromARGB(255, 255, 255, 255),
-          size: 32,
-        ),
-        elevation: 0,
-        title: Text(
-          'Informações Adicionais',
-          style: TextStyle(
-            fontSize: 28,
-            color: Colors.black54,
-            fontWeight: FontWeight.bold,
+        toolbarHeight: 300,
+        backgroundColor: Color.fromARGB(156, 0, 107, 57),
+        flexibleSpace: Align(
+          alignment: Alignment.bottomLeft,
+          child: Padding(
+            padding: EdgeInsets.only(left: 30, bottom: 30),
+            child: Stack(
+              alignment: Alignment.centerLeft,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Informações Adicionais',
+                      style: TextStyle(
+                        fontSize: 30,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
         ),
       ),
       body: Padding(
@@ -176,7 +201,7 @@ class _AddObservacoes extends State<AddObservacoes> {
             ),
             Padding(
               padding: EdgeInsets.only(bottom: 25, left: 15, right: 15),
-              child: Text("$currentDate "),
+              child: Text("$currentDate"),
             ),
             Padding(
               padding: EdgeInsets.all(15),
@@ -189,7 +214,31 @@ class _AddObservacoes extends State<AddObservacoes> {
                 ),
               ),
             ),
-            TextField(
+          GestureDetector(
+  onTap: () {
+    DateTime now = DateTime.now();
+    DatePicker.showDatePicker(
+      context,
+      showTitleActions: true,
+      minTime: now,
+      maxTime: DateTime(2100),
+      onChanged: (date) {},
+      onConfirm: (date) {
+        setState(() {
+          final formattedDate = DateFormat('dd/MM/yyyy').format(date);
+          _dataValidadeController.text = formattedDate;
+        });
+      },
+      currentTime: now,
+      locale: LocaleType.pt,
+      theme: DatePickerTheme(
+        cancelStyle: TextStyle(color: Color.fromARGB(156, 0, 107, 57),), // Cor do botão cancelar
+        doneStyle: TextStyle(color: Color.fromARGB(156, 0, 107, 57),), // Cor do botão confirmar
+      ),
+    );
+  },
+  child: AbsorbPointer(
+    child: TextField(
       controller: _dataValidadeController,
       keyboardType: TextInputType.datetime,
       inputFormatters: [
@@ -197,13 +246,6 @@ class _AddObservacoes extends State<AddObservacoes> {
         LengthLimitingTextInputFormatter(10),
         FilteringTextInputFormatter.singleLineFormatter,
       ],
-      onChanged: (text) {
-        setState(() {
-          _dataValidadeController.text = formatDate(text);
-          _dataValidadeController.selection =
-              TextSelection.fromPosition(TextPosition(offset: _dataValidadeController.text.length));
-        });
-      },
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.black12,
@@ -214,13 +256,16 @@ class _AddObservacoes extends State<AddObservacoes> {
         hintText: 'DD/MM/YYYY',
       ),
     ),
+  ),
+),
+
             SizedBox(
               height: 20,
             ),
             Padding(
               padding: EdgeInsets.all(15),
               child: Text(
-                "Funcionário que montou a caixa",
+                "Funcionário que montou",
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -285,8 +330,10 @@ class _AddObservacoes extends State<AddObservacoes> {
                               ),
                             ),
                             style: ElevatedButton.styleFrom(
-                              shadowColor: Colors.black,
                               elevation: 10.0,
+                              backgroundColor: Color.fromARGB(156, 0, 107, 57),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 20.0, vertical: 20.0),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),
                               ),

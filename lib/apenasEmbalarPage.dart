@@ -1,18 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:teste_catalogo/homePage.dart';
+import 'observacaoPage.dart';
 import 'tipoPage.dart';
 
-class formCriarCaixas extends StatefulWidget {
+class apenasEmbalar extends StatefulWidget {
   @override
-  _formCriarCaixasState createState() => _formCriarCaixasState();
+  _apenasEmbalar createState() => _apenasEmbalar();
 }
 
-class _formCriarCaixasState extends State<formCriarCaixas> {
+class _apenasEmbalar extends State<apenasEmbalar> {
   FirebaseFirestore db = FirebaseFirestore.instance;
   late int idAtual = 0;
   final _nomeCaixaController = TextEditingController();
-  final _idCaixaController = TextEditingController();
 
   List<Map<String, dynamic>> caixas = [];
 
@@ -24,49 +24,94 @@ class _formCriarCaixasState extends State<formCriarCaixas> {
 
   List<Map<String, dynamic>> instrumentaisList = [];
   List<int> quantities = []; // List to store quantities
+  
+  void adicionarArrayEmbalagemInstrumental(List<dynamic> instrumentais) {
+  db
+      .collection("embalagem")
+      .orderBy("id", descending: true)
+      .limit(1)
+      .get()
+      .then((QuerySnapshot snapshot) {
+    late int idAtual = 0;
+    late int idCaixa = 0;
 
-  void adicionarArrayCaixaInstrumental(List<dynamic> instrumentais) {
-    db
-        .collection("caixas")
-        .orderBy("id", descending: true)
-        .limit(1)
-        .get()
-        .then((QuerySnapshot snapshot) {
-      late int idAtual = 0;
-      if (snapshot.docs.isNotEmpty) {
-        int latestId = snapshot.docs[0]["id"] as int;
-        idAtual = latestId + 1;
-      } else {
-        idAtual = 1;
+    if (snapshot.docs.isNotEmpty) {
+      int latestId = snapshot.docs[0]["id"] as int;
+      idAtual = latestId + 1;
+    } else {
+      idAtual = 1;
+    }
+
+    Map<String, dynamic> novaCaixa = {
+      "caixa": false,
+      "id": idAtual,
+      "nome": _nomeCaixaController.text,
+      "idCaixa": idCaixa,
+      "instrumentais": [],
+    };
+
+    // Adicione os instrumentais à lista conforme a quantidade especificada
+    for (int i = 0; i < instrumentais.length; i++) {
+      int quantidade = instrumentais[i]['quantidade'];
+      String instrumentalNome = instrumentais[i]['nome'];
+      int instrumentaid = instrumentais[i]['id'] ?? 0;
+      int tipoId = instrumentais[i]['tipo'] ?? 0;
+      print('id do instrumental: $instrumentaid');
+      for (int j = 0; j < quantidade; j++) {
+        Map<String, dynamic> novoInstrumental = {
+          "id": instrumentaid,
+          "nome": instrumentalNome,
+          "tipo": tipoId,
+        };
+        novaCaixa['instrumentais'].add(novoInstrumental);
       }
+    }
 
-      Map<String, dynamic> novaCaixa = {
-        "caixa": true,
-        "id": idAtual,
-        "nome": _nomeCaixaController.text,
-        "instrumentais": []
-      };
-
-      // Adicione os instrumentais à lista conforme a quantidade especificada
-      for (int i = 0; i < instrumentais.length; i++) {
-        int quantidade = instrumentais[i]['quantidade'];
-        String instrumentalNome = instrumentais[i]['nome'];
-        int instrumentaid = instrumentais[i]['id'] ?? 0;
-        print('id isnutrmental $instrumentaid');
-        for (int j = 0; j < quantidade; j++) {
-          novaCaixa["instrumentais"].add(instrumentaid);
-        }
-      }
-
-      db.collection("caixas").doc(idAtual.toString()).set(novaCaixa).then((_) {
-        print("Nova caixa criada com sucesso");
-      }).catchError((error) {
-        print("Erro ao criar nova caixa: $error");
-      });
+    db.collection("embalagem").doc(idAtual.toString()).set(novaCaixa).then((_) {
+      print("Nova caixa criada com sucesso");
     }).catchError((error) {
-      print('Erro ao obter a caixa mais recente: $error');
+      print("Erro ao criar nova caixa: $error");
     });
-  }
+  }).catchError((error) {
+    print('Erro ao obter a caixa mais recente: $error');
+  });
+}
+
+
+
+  void adicionarArrayCaixaEmbalagem(List<dynamic> instrumentais) {
+  db.collection("embalagem")
+      .orderBy("id", descending: true)
+      .limit(1)
+      .get()
+      .then((QuerySnapshot snapshot) {
+    if (snapshot.docs.isNotEmpty) {
+      int latestId = snapshot.docs[0]["id"] as int;
+      String documentId = snapshot.docs[0].id;
+
+      DocumentReference documentRef = db.collection("embalagem").doc(documentId);
+
+      documentRef.get().then((DocumentSnapshot documentSnapshot) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        List<dynamic> existingInstrumentais = data["instrumentais"] ?? [];
+        List<dynamic> updatedInstrumentais = List.from(existingInstrumentais)..addAll(instrumentais);
+
+        documentRef.update({"instrumentais": updatedInstrumentais}).then((_) {
+          print("Instrumentais adicionados com sucesso");
+        }).catchError((error) {
+          print("Erro ao adicionar instrumentais: $error");
+        });
+      }).catchError((error) {
+        print("Erro ao obter o documento: $error");
+      });
+    } else {
+      print("A tabela Embalagem está vazia.");
+    }
+  }).catchError((error) {
+    print('Erro ao obter a embalagem mais recente: $error');
+  });
+}
+
 
   void mostrarModalBar() {
     print("Entrou na modalBar");
@@ -80,6 +125,7 @@ class _formCriarCaixasState extends State<formCriarCaixas> {
             children: caixas.map((caixa) {
               int id = caixa['id'];
               String nome = caixa['nome'];
+             // int idTipo = caixa['tipo'];
               return Container(
                 width: MediaQuery.of(context).size.width,
                 child: Padding(
@@ -188,9 +234,10 @@ class _formCriarCaixasState extends State<formCriarCaixas> {
                 children: instrumentaisData.map((instrumental) {
                   String instrumentalNome = instrumental['nome'];
                   int instrumentalId = instrumental['id'];
+                  int instrumentalTipo = instrumental['tipo'];
                   return InkWell(
                     onTap: () {
-                      addInstrumental(instrumentalNome, instrumentalId);
+                      addInstrumental(instrumentalNome, instrumentalId, instrumentalTipo);
                       print(instrumentaisList);
                       Navigator.pop(context); // Fechar a modal
                     },
@@ -217,11 +264,12 @@ class _formCriarCaixasState extends State<formCriarCaixas> {
             print('Erro ao obter os dados da tabela Instrumentais: $error'));
   }
 
-  void addInstrumental(String instrumentalNome, int idInstrumental) {
+  void addInstrumental(String instrumentalNome, int idInstrumental, int instrumentaltipo) {
     setState(() {
       instrumentaisList.add({
         'nome': instrumentalNome,
         'id': idInstrumental,
+        'tipo': instrumentaltipo,
         'quantidade': 1,
       });
     });
@@ -265,7 +313,7 @@ class _formCriarCaixasState extends State<formCriarCaixas> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      'Criar Caixa',
+                      'Apenas Embalar',
                       style: TextStyle(
                         fontSize: 30,
                         color: Colors.white,
@@ -286,7 +334,7 @@ class _formCriarCaixasState extends State<formCriarCaixas> {
           children: [
             Padding(
               padding: EdgeInsets.all(15),
-              child: Text("Nome da Caixa"),
+              child: Text("Nome da Embalagem"),
             ),
             TextFormField(
               controller: _nomeCaixaController,
@@ -323,12 +371,11 @@ class _formCriarCaixasState extends State<formCriarCaixas> {
                             ),
                             style: ElevatedButton.styleFrom(
                               elevation: 10.0,
-                                backgroundColor:
-                                    Color.fromARGB(156, 0, 107, 57),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 20.0, vertical: 20.0),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
+                              backgroundColor: Color.fromARGB(156, 0, 107, 57),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 20.0, vertical: 20.0),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
                               ),
                             ),
                           ),
@@ -435,7 +482,7 @@ class _formCriarCaixasState extends State<formCriarCaixas> {
                                           onPressed: () {
                                             Navigator.pop(context);
                                           },
-                                          child: Text('Continuar',style: TextStyle(color: Color.fromARGB(156, 0, 107, 57),)),
+                                          child: Text('Continuar'),
                                         ),
                                       ],
                                     );
@@ -443,24 +490,26 @@ class _formCriarCaixasState extends State<formCriarCaixas> {
                                 );
                                 return;
                               } else {
-                                adicionarArrayCaixaInstrumental(
+                                adicionarArrayEmbalagemInstrumental(
                                     instrumentaisList);
                                 showDialog(
                                   context: context,
                                   builder: (BuildContext context) {
                                     return AlertDialog(
-                                      title:
-                                          Text('Caixa Adicionada com sucesso!'),
+                                      title: Text(
+                                          'Embalagem Adicionada com sucesso!'),
                                       actions: [
                                         TextButton(
-                                           onPressed: () {
-                                            Navigator.pushNamedAndRemoveUntil(
-        context,
-        '/',
-        (route) => false,
-      );
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    AddObservacoes(idCaixa: idAtual),
+                                              ),
+                                            );
                                           },
-                                          child: Text('Continuar',style: TextStyle(color: Color.fromARGB(156, 0, 107, 57),)),
+                                          child: Text('Continuar'),
                                         ),
                                       ],
                                     );
@@ -469,7 +518,7 @@ class _formCriarCaixasState extends State<formCriarCaixas> {
                               }
                             },
                             child: Text(
-                              "Criar caixa",
+                              "Criar embalagem",
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 15,
@@ -477,12 +526,11 @@ class _formCriarCaixasState extends State<formCriarCaixas> {
                             ),
                             style: ElevatedButton.styleFrom(
                               elevation: 10.0,
-                                backgroundColor:
-                                    Color.fromARGB(156, 0, 107, 57),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 20.0, vertical: 20.0),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
+                              backgroundColor: Color.fromARGB(156, 0, 107, 57),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 20.0, vertical: 20.0),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
                               ),
                             ),
                           ),

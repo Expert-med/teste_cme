@@ -60,7 +60,7 @@ class _Teste extends State<Teste> {
                       ),
                     );
                   },
-                  child: Text('Finalizar Caixa'),
+                  child: Text('Finalizar Caixa',style: TextStyle(color: Color.fromARGB(156, 0, 107, 57),),),
                 ),
               ],
             );
@@ -78,7 +78,7 @@ class _Teste extends State<Teste> {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: Text('Não'),
+                  child: Text('Não',style: TextStyle(color: Color.fromARGB(156, 0, 107, 57),),),
                 ),
                 TextButton(
                   onPressed: () {
@@ -89,7 +89,7 @@ class _Teste extends State<Teste> {
                     ),
                   ); */
                   },
-                  child: Text('Sim'),
+                  child: Text('Sim',style: TextStyle(color: Color.fromARGB(156, 0, 107, 57),),),
                 ),
               ],
             );
@@ -306,22 +306,34 @@ class _Teste extends State<Teste> {
                       ],
                     ),
                   ),
-                  leading: Checkbox(
-                    value: checkboxValues[index],
-                    onChanged: (bool? value) {
-                      setState(() {
-                        checkboxValues[index] = value ?? false;
-                      });
-                    },
-                  ),
+                  leading:Checkbox(
+  value: checkboxValues[index],
+  onChanged: (bool? value) {
+    setState(() {
+      checkboxValues[index] = value ?? false;
+    });
+  },
+  activeColor: Color.fromARGB(156, 0, 107, 57), // Definir a cor aqui
+),
+
                 );
               },
             ),
           ),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(50.0),
-              child: ElevatedButton(
+         SizedBox(height: 40,),
+              Center(
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            height: 70,
+                            child: Padding(
+                                    padding: const EdgeInsets.only(left: 15, right: 15),
+                              child:ElevatedButton(
                 onPressed: () {
                   verificarMarcados();
                 },
@@ -339,7 +351,7 @@ class _Teste extends State<Teste> {
                 ),
                 style: ElevatedButton.styleFrom(
                   elevation: 10.0,
-                  backgroundColor: Color.fromARGB(222, 54, 185, 246),
+                  backgroundColor: Color.fromARGB(156, 0, 107, 57),
                   padding:
                       EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
                   shape: RoundedRectangleBorder(
@@ -347,8 +359,15 @@ class _Teste extends State<Teste> {
                   ),
                 ),
               ),
-            ),
-          ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+        SizedBox(height: 40,),
         ],
       ),
     );

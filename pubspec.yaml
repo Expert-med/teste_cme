@@ -39,6 +39,8 @@ dependencies:
   cloud_firestore: ^4.8.0
   firebase_storage: ^11.2.3
   printing: ^5.10.4
+  flutter_datetime_picker: ^1.5.1
+  intl: ^0.18.1
 
 dev_dependencies:
   flutter_test:

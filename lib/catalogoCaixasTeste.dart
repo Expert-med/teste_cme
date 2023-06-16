@@ -82,13 +82,14 @@ void adicionarArrayCaixaEmbalagem(List<dynamic> instrumentais) {
 
 
 
-
-  
 void buscarCaixas() {
   db.collection("caixas").get().then((QuerySnapshot snapshot) {
     if (snapshot.docs.isNotEmpty) {
       setState(() {
-        caixas = snapshot.docs.map((caixa) => caixa.data() as Map<String, dynamic>).toList();
+        caixas = snapshot.docs
+            .map((caixa) => caixa.data() as Map<String, dynamic>)
+            .where((caixa) => caixa['id'] > 0)
+            .toList();
       });
     } else {
       print("Não foram encontradas caixas no banco de dados.");
@@ -138,7 +139,7 @@ void buscarCaixas() {
             children: caixas.map((caixa) {
               
               int id = caixa['id'];
-              String nome = caixa['nome'];
+              String nome = caixa['nome'] ?? '';
               return Container(
                 width: MediaQuery.of(context).size.width,
                 child: Padding(
