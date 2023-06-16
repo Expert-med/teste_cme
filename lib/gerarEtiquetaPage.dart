@@ -54,7 +54,19 @@ class _gerarEtiquetaState extends State<gerarEtiqueta> {
         appBar: AppBar(
           toolbarHeight: 100,
           backgroundColor: Color.fromARGB(156, 0, 107, 57),
-          flexibleSpace: Align(
+         flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF0066e2),
+                Color(0xFF6C1BC8),
+              ],
+              stops: [0, 1],
+            ),
+          ),
+          child: Align(
             alignment: Alignment.bottomLeft,
             child: Padding(
               padding: EdgeInsets.only(left: 30, bottom: 30),
@@ -65,15 +77,12 @@ class _gerarEtiquetaState extends State<gerarEtiqueta> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 15),
-                        child: Text(
-                          'Etiqueta gerada',
-                          style: TextStyle(
-                            fontSize: 30,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      Text(
+                        'ETIQUETA GERADA',
+                        style: TextStyle(
+                          fontSize: 30,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
@@ -82,6 +91,7 @@ class _gerarEtiquetaState extends State<gerarEtiqueta> {
               ),
             ),
           ),
+        ),
           leading: IconButton(
             icon: Icon(Icons.home),
             onPressed: () {

@@ -103,31 +103,43 @@ void buscarCaixas() {
   @override
   Widget build(BuildContext context) {
    return Scaffold(
-      appBar: AppBar(
+      appBar:AppBar(
         toolbarHeight: 300,
-        backgroundColor: Color.fromARGB(156, 0, 107, 57),
-        flexibleSpace: Align(
-          alignment: Alignment.bottomLeft,
-          child: Padding(
-            padding: EdgeInsets.only(left: 30, bottom: 30),
-            child: Stack(
-              alignment: Alignment.centerLeft,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Catálogo de caixas',
-                      style: TextStyle(
-                        fontSize: 30,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF0066e2),
+                Color(0xFF6C1BC8),
               ],
+              stops: [0, 1],
+            ),
+          ),
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: Padding(
+              padding: EdgeInsets.only(left: 30, bottom: 30),
+              child: Stack(
+                alignment: Alignment.centerLeft,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        'CATÁLOGO DE CAIXAS',
+                        style: TextStyle(
+                          fontSize: 30,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

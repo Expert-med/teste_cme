@@ -50,7 +50,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
-        fixedColor: Color.fromARGB(156, 0, 107, 57),
+        fixedColor:   Color(0xFF6C1BC8),
         backgroundColor: Color.fromRGBO(255, 255, 255, 1),
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(

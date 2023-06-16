@@ -149,29 +149,41 @@ class _historicoInfo extends State<historicoInfo> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 300,
-        backgroundColor: Color.fromARGB(156, 0, 107, 57),
-        flexibleSpace: Align(
-          alignment: Alignment.bottomLeft,
-          child: Padding(
-            padding: EdgeInsets.only(left: 30, bottom: 30),
-            child: Stack(
-              alignment: Alignment.centerLeft,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Informações adicionais',
-                      style: TextStyle(
-                        fontSize: 30,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF0066e2),
+                Color(0xFF6C1BC8),
               ],
+              stops: [0, 1],
+            ),
+          ),
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: Padding(
+              padding: EdgeInsets.only(left: 30, bottom: 30),
+              child: Stack(
+                alignment: Alignment.centerLeft,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        'INFORMAÇÕES ADICIONADAS',
+                        style: TextStyle(
+                          fontSize: 30,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -458,7 +470,7 @@ class _historicoInfo extends State<historicoInfo> {
                             style: ElevatedButton.styleFrom(
                               elevation: 10.0,
                                 backgroundColor:
-                                    Color.fromARGB(156, 0, 107, 57),
+                                   Color(0xFF6C1BC8),
                                 padding: EdgeInsets.symmetric(
                                     horizontal: 20.0, vertical: 20.0),
                                 shape: RoundedRectangleBorder(

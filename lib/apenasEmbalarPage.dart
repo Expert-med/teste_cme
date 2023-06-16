@@ -113,84 +113,67 @@ class _apenasEmbalar extends State<apenasEmbalar> {
 }
 
 
-  void mostrarModalBar() {
-    print("Entrou na modalBar");
-    //listarDadosInstrumentais(); // Call the method to fetch instrumentals
-    showModalBottomSheet(
+    void mostrarModalBar() {
+    showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: caixas.map((caixa) {
-              int id = caixa['id'];
-              String nome = caixa['nome'];
-             // int idTipo = caixa['tipo'];
-              return Container(
-                width: MediaQuery.of(context).size.width,
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(20, 20, 20, 20),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        alignment: Alignment.topCenter,
-                        child: IntrinsicHeight(
+        return Dialog(
+          child: Container(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: caixas.map((caixa) {
+                int id = caixa['id'];
+                String nome = caixa['nome'];
+                // int idTipo = caixa['tipo'];
+                return GestureDetector(
+                  onTap: () {
+                    listarInstrumentais(idTipo: caixa['id']);
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '$id',
+                          style: TextStyle(
+                            color: Colors.black54,
+                            fontSize: 60,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Expanded(
                           child: Text(
-                            '$id',
+                            '${nome[0].toUpperCase()}${nome.substring(1)}',
                             style: TextStyle(
+                              fontSize: 30,
                               color: Colors.black54,
-                              fontSize: 60,
-                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                      ),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Expanded(
-                        child: Text(
-                          '${nome[0].toUpperCase()}${nome.substring(1)}',
-                          style: TextStyle(
-                            fontSize: 30,
-                            color: Colors.black54,
-                          ),
+                        Spacer(),
+                        Icon(
+                          Icons.arrow_forward,
+                          color: Colors.black54,
+                          size: 30,
                         ),
-                      ),
-                      Spacer(),
-                      InkWell(
-                        onTap: () {
-                          listarInstrumentais(idTipo: caixa['id']);
-                          Navigator.pop(context);
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.rectangle,
-                            borderRadius: BorderRadius.circular(
-                                10), // Define o borderRadius desejado
-
-                            color: Colors
-                                .black26, // Define a cor de fundo desejada
-                          ),
-                          padding: EdgeInsets.all(12),
-                          child: Icon(
-                            Icons.arrow_forward,
-                            color: Colors.black54, // Define a cor do ícone
-                            size: 30,
-                          ),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
         );
       },
     );
   }
+
 
   void buscarTipo() {
     db.collection("tipo_instrumental").get().then((QuerySnapshot snapshot) {
@@ -208,36 +191,80 @@ class _apenasEmbalar extends State<apenasEmbalar> {
     });
   }
 
-  void listarInstrumentais({required int idTipo}) {
-    print('Entrou em listarInstrumentais $idTipo');
+    void listarInstrumentais({required int idTipo}) {
+  String searchTerm = ''; // Add a variable to store the search term
 
-    // Acessa a coleção "instrumentais" no Firestore
-    FirebaseFirestore.instance
-        .collection("instrumentais")
-        .where("tipo", isEqualTo: idTipo)
-        .get()
-        .then((QuerySnapshot snapshot) {
-      if (snapshot.docs.isNotEmpty) {
-        List<Map<String, dynamic>> instrumentaisData = snapshot.docs.map((doc) {
-          // Obtém os dados do instrumental do documento
-          Map<String, dynamic> instrumentalData =
-              doc.data() as Map<String, dynamic>;
-          return instrumentalData;
-        }).toList();
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Search Instrumentais'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              onChanged: (value) {
+                searchTerm = value; // Update the search term as the user types
+              },
+              decoration: InputDecoration(
+                labelText: 'Search',
+              ),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                fetchFilteredInstrumentais(idTipo, searchTerm);
+                Navigator.pop(context);
+              },
+              child: Text('Search'),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
 
-        // Exiba os instrumentais na tela
-        showModalBottomSheet(
-          context: context,
-          builder: (BuildContext context) {
-            return Container(
+void fetchFilteredInstrumentais(int idTipo, String searchTerm) {
+  print('Entrou em listarInstrumentais $idTipo');
+
+  // Acessa a coleção "instrumentais" no Firestore
+  FirebaseFirestore.instance
+      .collection("instrumentais")
+      .where("tipo", isEqualTo: idTipo)
+      .get()
+      .then((QuerySnapshot snapshot) {
+    if (snapshot.docs.isNotEmpty) {
+      List<Map<String, dynamic>> instrumentaisData = snapshot.docs
+          .map((doc) {
+            // Obtém os dados do instrumental do documento
+            Map<String, dynamic> instrumentalData =
+                doc.data() as Map<String, dynamic>;
+            return instrumentalData;
+          })
+          .where((instrumental) {
+            final instrumentalNome = instrumental['nome']?.toString() ?? '';
+            return instrumentalNome.contains(searchTerm);
+          })
+          .toList();
+
+      // Exiba os instrumentais na tela
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            child: Container(
+              padding: EdgeInsets.all(20),
               child: ListView(
+                shrinkWrap: true,
                 children: instrumentaisData.map((instrumental) {
                   String instrumentalNome = instrumental['nome'];
                   int instrumentalId = instrumental['id'];
                   int instrumentalTipo = instrumental['tipo'];
-                  return InkWell(
+                  return GestureDetector(
                     onTap: () {
-                      addInstrumental(instrumentalNome, instrumentalId, instrumentalTipo);
+                      addInstrumental(
+                          instrumentalNome, instrumentalId, instrumentalTipo);
                       print(instrumentaisList);
                       Navigator.pop(context); // Fechar a modal
                     },
@@ -246,23 +273,26 @@ class _apenasEmbalar extends State<apenasEmbalar> {
                       child: Text(
                         instrumentalNome,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 25,
                           color: Colors.black54,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   );
                 }).toList(),
               ),
-            );
-          },
-        );
-      } else {
-        print("A tabela Instrumentais está vazia.");
-      }
-    }).catchError((error) =>
-            print('Erro ao obter os dados da tabela Instrumentais: $error'));
-  }
+            ),
+          );
+        },
+      );
+    } else {
+      print("A tabela Instrumentais está vazia.");
+    }
+  }).catchError(
+      (error) => print('Erro ao obter os dados da tabela Instrumentais: $error'));
+}
+
 
   void addInstrumental(String instrumentalNome, int idInstrumental, int instrumentaltipo) {
     setState(() {
@@ -298,31 +328,43 @@ class _apenasEmbalar extends State<apenasEmbalar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar:AppBar(
         toolbarHeight: 300,
-        backgroundColor: Color.fromARGB(156, 0, 107, 57),
-        flexibleSpace: Align(
-          alignment: Alignment.bottomLeft,
-          child: Padding(
-            padding: EdgeInsets.only(left: 30, bottom: 30),
-            child: Stack(
-              alignment: Alignment.centerLeft,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Apenas Embalar',
-                      style: TextStyle(
-                        fontSize: 30,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF0066e2),
+                Color(0xFF6C1BC8),
               ],
+              stops: [0, 1],
+            ),
+          ),
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: Padding(
+              padding: EdgeInsets.only(left: 30, bottom: 30),
+              child: Stack(
+                alignment: Alignment.centerLeft,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        'APENAS EMBALAR',
+                        style: TextStyle(
+                          fontSize: 30,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -371,7 +413,7 @@ class _apenasEmbalar extends State<apenasEmbalar> {
                             ),
                             style: ElevatedButton.styleFrom(
                               elevation: 10.0,
-                              backgroundColor: Color.fromARGB(156, 0, 107, 57),
+                              backgroundColor: Color(0xFF6C1BC8),
                               padding: EdgeInsets.symmetric(
                                   horizontal: 20.0, vertical: 20.0),
                               shape: RoundedRectangleBorder(
@@ -526,7 +568,7 @@ class _apenasEmbalar extends State<apenasEmbalar> {
                             ),
                             style: ElevatedButton.styleFrom(
                               elevation: 10.0,
-                              backgroundColor: Color.fromARGB(156, 0, 107, 57),
+                              backgroundColor:Color(0xFF6C1BC8),
                               padding: EdgeInsets.symmetric(
                                   horizontal: 20.0, vertical: 20.0),
                               shape: RoundedRectangleBorder(
