@@ -39,16 +39,18 @@ class _historicoPage extends State<historicoPage> {
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> filteredEmbalagens = embalagens
-    .where((embalagem) {
-      final id = embalagem['id']?.toString() ?? '';
-      final dataAtual = embalagem['infoAdicionais']?['dataAtual']?.toString() ?? '';
-      final dataValidade = embalagem['infoAdicionais']?['dataValidade']?.toString() ?? '';
-      return id.contains(searchTerm) ||
-             dataAtual.contains(searchTerm) ||
-             dataValidade.contains(searchTerm);
-    })
-    .toList();
+    List<Map<String, dynamic>> filteredEmbalagens = embalagens;
+    if (searchTerm.isEmpty) {
+    filteredEmbalagens = embalagens;
+  } else {
+    filteredEmbalagens = embalagens
+        .where((embalagem) {
+          final id = embalagem['id']?.toString() ?? '';
+          return id == searchTerm;
+        })
+        .toList();
+  }
+
     
     return Scaffold(
       appBar: AppBar(
@@ -98,39 +100,39 @@ class _historicoPage extends State<historicoPage> {
             mainAxisSize: MainAxisSize.max,
             children: [
               Padding(
-  padding: EdgeInsets.all(20),
-  child: TextField(
-    onChanged: (value) {
-      setState(() {
-        searchTerm = value.toLowerCase();
-      });
-    },
-    decoration: InputDecoration(
-      labelText: 'Procurar',
-      labelStyle: TextStyle(
-        color: Color(0xFF6C1BC8), // Cor do texto "Procurar"
-      ),
-      prefixIcon: Icon(
-        Icons.search,
-        color: Color(0xFF6C1BC8), // Cor da lupa
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: Colors.grey), // Cor padrão do contorno
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: Color(0xFF6C1BC8)), // Cor do contorno ao clicar
-      ),
-    ),
-  ),
-),
+                padding: EdgeInsets.all(20),
+                child: TextField(
+                  onChanged: (value) {
+                    setState(() {
+                      searchTerm = value.toLowerCase();
+                    });
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Procurar',
+                    labelStyle: TextStyle(
+                      color: Color(0xFF6C1BC8), // Cor do texto "Procurar"
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: Color(0xFF6C1BC8), // Cor da lupa
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: Colors.grey), // Cor padrão do contorno
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: Color(0xFF6C1BC8)), // Cor do contorno ao clicar
+                    ),
+                  ),
+                ),
+              ),
 
               ListView.builder(
                 shrinkWrap: true,
                 itemCount: filteredEmbalagens.length,
                 itemBuilder: (context, index) {
-                  Map<String, dynamic> embalagem = filteredEmbalagens[index];
+                  Map<String, dynamic> embalagem = filteredEmbalagens.reversed.toList()[index];
                   int id = embalagem['id'];
                   int idCaixa = embalagem['idCaixa'] ?? 0;
                   return Container(

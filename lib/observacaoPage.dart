@@ -195,170 +195,172 @@ class _AddObservacoes extends State<AddObservacoes> {
           ),
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.all(15),
-              child: Text(
-                "Data de fabricação",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.all(15),
+                child: Text(
+                  "Data de fabricação",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.only(bottom: 25, left: 15, right: 15),
-              child: Text("$currentDate"),
-            ),
-            Padding(
-              padding: EdgeInsets.all(15),
-              child: Text(
-                "Data de validade",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+              Padding(
+                padding: EdgeInsets.only(bottom: 25, left: 15, right: 15),
+                child: Text("$currentDate"),
+              ),
+              Padding(
+                padding: EdgeInsets.all(15),
+                child: Text(
+                  "Data de validade",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
               ),
-            ),
-          GestureDetector(
-  onTap: () {
-    DateTime now = DateTime.now();
-    DatePicker.showDatePicker(
-      context,
-      showTitleActions: true,
-      minTime: now,
-      maxTime: DateTime(2100),
-      onChanged: (date) {},
-      onConfirm: (date) {
-        setState(() {
-          final formattedDate = DateFormat('dd/MM/yyyy').format(date);
-          _dataValidadeController.text = formattedDate;
-        });
-      },
-      currentTime: now,
-      locale: LocaleType.pt,
-      theme: DatePickerTheme(
-        cancelStyle: TextStyle(color:  Color(0xFF6C1BC8),), // Cor do botão cancelar
-        doneStyle: TextStyle(color:   Color(0xFF6C1BC8),), // Cor do botão confirmar
-      ),
-    );
-  },
-  child: AbsorbPointer(
-    child: TextField(
-      controller: _dataValidadeController,
-      keyboardType: TextInputType.datetime,
-      inputFormatters: [
-        FilteringTextInputFormatter.digitsOnly,
-        LengthLimitingTextInputFormatter(10),
-        FilteringTextInputFormatter.singleLineFormatter,
-      ],
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.black12,
-        border: OutlineInputBorder(
-          borderSide: BorderSide.none,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        hintText: 'DD/MM/YYYY',
-      ),
-    ),
-  ),
-),
-
-            SizedBox(
-              height: 20,
-            ),
-            Padding(
-              padding: EdgeInsets.all(15),
-              child: Text(
-                "Funcionário que montou",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+            GestureDetector(
+              onTap: () {
+                DateTime now = DateTime.now();
+                DatePicker.showDatePicker(
+                  context,
+                  showTitleActions: true,
+                  minTime: now,
+                  maxTime: DateTime(2100),
+                  onChanged: (date) {},
+                  onConfirm: (date) {
+                    setState(() {
+                      final formattedDate = DateFormat('dd/MM/yyyy').format(date);
+                      _dataValidadeController.text = formattedDate;
+                    });
+                  },
+                currentTime: now,
+                locale: LocaleType.pt,
+                theme: DatePickerTheme(
+                  cancelStyle: TextStyle(color:  Color(0xFF6C1BC8),), // Cor do botão cancelar
+                  doneStyle: TextStyle(color:   Color(0xFF6C1BC8),), // Cor do botão confirmar
+                ),
+              );
+            },
+                child: AbsorbPointer(
+                  child: TextField(
+                    controller: _dataValidadeController,
+                    keyboardType: TextInputType.datetime,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(10),
+                      FilteringTextInputFormatter.singleLineFormatter,
+                    ],
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.black12,
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      hintText: 'DD/MM/YYYY',
+                    ),
+                  ),
                 ),
               ),
-            ),
-            TextField(
-              controller: _nomeFuncionarioController,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.black12,
-                border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(20),
+      
+              SizedBox(
+                height: 20,
+              ),
+              Padding(
+                padding: EdgeInsets.all(15),
+                child: Text(
+                  "Funcionário que montou",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 20),
-            Padding(
-              padding: EdgeInsets.all(15),
-              child: Text(
-                "Observações",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+              TextField(
+                controller: _nomeFuncionarioController,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.black12,
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
               ),
-            ),
-            TextField(
-              controller: _observacoesController,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.black12,
-                border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(20),
+              SizedBox(height: 20),
+              Padding(
+                padding: EdgeInsets.all(15),
+                child: Text(
+                  "Observações",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 20),
-            Center(
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width,
-                          height: 70,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              adicionarArrayObservacoes();
-                            },
-                            child: Text(
-                              "Gerar Etiqueta",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
+              TextField(
+                controller: _observacoesController,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.black12,
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              Center(
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            height: 70,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                adicionarArrayObservacoes();
+                              },
+                              child: Text(
+                                "Gerar Etiqueta",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                ),
                               ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              elevation: 10.0,
-                              backgroundColor:   Color(0xFF6C1BC8),
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 20.0, vertical: 20.0),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
+                              style: ElevatedButton.styleFrom(
+                                elevation: 10.0,
+                                backgroundColor:   Color(0xFF6C1BC8),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20.0, vertical: 20.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

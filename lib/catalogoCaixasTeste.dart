@@ -1,15 +1,9 @@
-//caixas
-
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:teste_catalogo/catalogTeste.dart';
 import 'package:teste_catalogo/catalogoCaixas.dart';
 
 class CatalogoCaixasTeste extends StatefulWidget {
-  /* final int idTipo;
-
-  CatalogoCaixasTeste({required this.idTipo});*/
   @override
   _CatalogoCaixasTesteState createState() => _CatalogoCaixasTesteState();
 }
@@ -17,6 +11,7 @@ class CatalogoCaixasTeste extends StatefulWidget {
 class _CatalogoCaixasTesteState extends State<CatalogoCaixasTeste> {
   FirebaseFirestore db = FirebaseFirestore.instance;
   List<Map<String, dynamic>> caixas = [];
+  List<Map<String, dynamic>> filteredCaixas = [];
 
   @override
   void initState() {
@@ -24,8 +19,37 @@ class _CatalogoCaixasTesteState extends State<CatalogoCaixasTeste> {
     buscarCaixas();
   }
 
+  void buscarCaixas() {
+    db.collection("caixas").get().then((QuerySnapshot snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        setState(() {
+          caixas = snapshot.docs
+              .map((caixa) => caixa.data() as Map<String, dynamic>)
+              .where((caixa) => caixa['id'] > 0)
+              .toList();
+          filteredCaixas = List.from(caixas);
+        });
+      } else {
+        print("Não foram encontradas caixas no banco de dados.");
+      }
+    }).catchError((error) {
+      print('Erro ao buscar as caixas: $error');
+    });
+  }
 
-void adicionarIdCaixaEmbalagem(int idCaixa) {
+  void filterCaixas(String searchQuery) {
+  setState(() {
+    filteredCaixas = caixas.where((caixa) {
+      final nome = caixa['nome'].toString().toLowerCase();
+      final id = caixa['id'].toString().toLowerCase();
+      final query = searchQuery.toLowerCase();
+      return nome.contains(query) || id == query;
+    }).toList();
+  });
+}
+
+
+  void adicionarIdCaixaEmbalagem(int idCaixa) {
   db.collection("embalagem")
       .orderBy("id", descending: true)
       .limit(1)
@@ -52,58 +76,12 @@ void adicionarIdCaixaEmbalagem(int idCaixa) {
     print('Erro ao obter a embalagem mais recente: $error');
   });
 }
-/*
-void adicionarArrayCaixaEmbalagem(List<dynamic> instrumentais) {
-  db.collection("embalagem")
-      .orderBy("id", descending: true)
-      .limit(1)
-      .get()
-      .then((QuerySnapshot snapshot) {
-    if (snapshot.docs.isNotEmpty) {
-      int latestId = snapshot.docs[0]["id"];
-      String documentId = snapshot.docs[0].id;
-
-      DocumentReference documentRef =
-          db.collection("embalagem").doc(documentId);
-
-      documentRef.update({"instrumentais": FieldValue.arrayUnion(instrumentais)}).then((_) {
-        print("instrumentais adicionados com sucesso");
-      }).catchError((error) {
-        print("Erro ao adicionar instrumentais: $error");
-      });
-    } else {
-      print("A tabela Embalagem está vazia.");
-    }
-  }).catchError((error) {
-    print('Erro ao obter a embalagem mais recente: $error');
-  });
-}
-*/
-
-
-
-void buscarCaixas() {
-  db.collection("caixas").get().then((QuerySnapshot snapshot) {
-    if (snapshot.docs.isNotEmpty) {
-      setState(() {
-        caixas = snapshot.docs
-            .map((caixa) => caixa.data() as Map<String, dynamic>)
-            .where((caixa) => caixa['id'] > 0)
-            .toList();
-      });
-    } else {
-      print("Não foram encontradas caixas no banco de dados.");
-    }
-  }).catchError((error) {
-    print('Erro ao buscar as caixas: $error');
-  });
-}
 
 
   @override
   Widget build(BuildContext context) {
-   return Scaffold(
-      appBar:AppBar(
+    return Scaffold(
+      appBar: AppBar(
         toolbarHeight: 300,
         flexibleSpace: Container(
           decoration: BoxDecoration(
@@ -145,84 +123,89 @@ void buscarCaixas() {
         ),
       ),
       body: SingleChildScrollView(
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: caixas.map((caixa) {
-              
-              int id = caixa['id'];
-              String nome = caixa['nome'] ?? '';
-              return Container(
-                width: MediaQuery.of(context).size.width,
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(20, 20, 20, 20),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        alignment: Alignment.topCenter,
-                        child: IntrinsicHeight(
-                          child: Text(
-                            '$id',
-                            style: TextStyle(
-                              color: Colors.black54,
-                              fontSize: 60,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    SizedBox(
-                        width: 10,
-                      ),
-                         Expanded(
-                        child: Text(
-                          '$nome',
-                          style: TextStyle(
-                            fontSize: 30,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ),
-                      Spacer(),
-                      InkWell(
-                        onTap: () {
-                          adicionarIdCaixaEmbalagem(caixa['id']);
-                          //adicionarArrayCaixaEmbalagem(caixa['instrumentais']);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => Teste(idCaixa:caixa['id'])),
-                          );
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.rectangle,
-                            borderRadius: BorderRadius.circular(
-                                10), // Define o borderRadius desejado
-
-                            color: Colors
-                                .black12, // Define a cor de fundo desejada
-                          ),
-                          padding: EdgeInsets.all(12),
-                          child: Icon(
-                            Icons.arrow_forward,
-                            color: Colors.black54, // Define a cor do ícone
-                            size: 30,
-                          ),
-                        ),
-                      ),
-                     
-                    ],
-                  ),
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: TextField(
+                onChanged: (value) => filterCaixas(value),
+                decoration: InputDecoration(
+                  labelText: 'Pesquisar',
+                  labelStyle: TextStyle(
+                                    color: Color(
+                                        0xFF6C1BC8), // Cor do texto "Procurar"
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.search,
+                                    color: Color(0xFF6C1BC8), // Cor da lupa
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                        color: Colors
+                                            .grey), // Cor padrão do contorno
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                        color: Color(
+                                            0xFF6C1BC8)), // Cor do contorno ao clicar
+                                  ),
+                  
                 ),
-              );
-            }).toList(),
-          ),
+              ),
+            ),
+            ListView.builder(
+              shrinkWrap: true,
+              itemCount: filteredCaixas.length,
+              itemBuilder: (context, index) {
+                final caixa = filteredCaixas[index];
+                int id = caixa['id'];
+                String nome = caixa['nome'] ?? '';
+
+                return ListTile(
+                  leading: Container(
+                    alignment: Alignment.center,
+                    width: 80,
+                    height: 80,
+                    child: Text(
+                      '$id',
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    nome,
+                    style: TextStyle(
+                      fontSize: 30,
+                      color: Colors.black54,
+                    ),
+                  ),
+                  trailing: Container(
+                    width: 80,
+                    height: 80,
+                    child: IconButton(
+                      icon: Icon(Icons.arrow_forward),
+                      onPressed: () {
+                        adicionarIdCaixaEmbalagem(caixa['id']);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Teste(idCaixa: caixa['id']),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
   }
-  
-  }
-
+}

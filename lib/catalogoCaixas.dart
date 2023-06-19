@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:teste_catalogo/criarCaixaPersonal.dart';
 import 'catalogCaixasInstruInfo.dart';
 import 'firebase/firebase_options.dart';
 import 'observacaoPage.dart';
@@ -32,72 +33,87 @@ class _Teste extends State<Teste> {
   }
 
   String nomeCaixa = '';
-  void verificarMarcados() {
-    setState(() {
-      todosMarcados = true;
-      for (bool value in checkboxValues) {
-        if (!value) {
-          todosMarcados = false;
-          break;
-        }
-      }
-
-      if (todosMarcados) {
-        adicionarArrayCaixaEmbalagem(instrumentaisList);
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Instrumentais adicionados com sucesso!'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            AddObservacoes(idCaixa: widget.idCaixa),
-                      ),
-                    );
-                  },
-                  child: Text('Finalizar Caixa',style: TextStyle(color: Color(0xFF6C1BC8),),),
-                ),
-              ],
-            );
-          },
-        );
+void verificarMarcados() {
+  setState(() {
+    List<Map<String, dynamic>> selectedInstrumentais = [];
+    todosMarcados = true;
+    
+    for (int i = 0; i < checkboxValues.length; i++) {
+      if (checkboxValues[i]) {
+        selectedInstrumentais.add(instrumentaisList[i]);
       } else {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Alguns instrumentais não estão marcados.'),
-              content: Text('Deseja continuar?'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text('Não',style: TextStyle(color: Color(0xFF6C1BC8),),),
-                ),
-                TextButton(
-                  onPressed: () {
-                    /* Navigator.push(
+        todosMarcados = false;
+      }
+    }
+
+    if (todosMarcados) {
+      adicionarArrayCaixaEmbalagem(selectedInstrumentais);
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Instrumentais adicionados com sucesso!'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => AddObservacoes(),
+                      builder: (context) => AddObservacoes(idCaixa: widget.idCaixa),
                     ),
-                  ); */
-                  },
-                  child: Text('Sim',style: TextStyle(color: Color(0xFF6C1BC8),),),
+                  );
+                },
+                child: Text(
+                  'Finalizar Caixa',
+                  style: TextStyle(color: Color(0xFF6C1BC8)),
                 ),
-              ],
-            );
-          },
-        );
-      }
-    });
-  }
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Alguns instrumentais não estão marcados.'),
+            content: Text('Deseja continuar?'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  'Não',
+                  style: TextStyle(color: Color(0xFF6C1BC8)),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  adicionarArrayCaixaEmbalagem(selectedInstrumentais);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CriaPeronalizada(
+                        instrumentaisListParametro: selectedInstrumentais,
+                      ),
+                    ),
+                  );
+                },
+                child: Text(
+                  'Sim',
+                  style: TextStyle(color: Color(0xFF6C1BC8)),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  });
+}
+
 
   void buscarInstrumentos(int idCaixa) {
     FirebaseFirestore.instance
@@ -124,69 +140,67 @@ class _Teste extends State<Teste> {
   }
 
   void listarDadosInstrumentais(List<dynamic> ids) {
-  print('entrou em listarDadosInstrumentais $ids');
-  instrumentaisList = []; // Limpar a lista antes de adicioná-los novamente
-  checkboxValues = []; // Limpar a lista dos valores do checkbox
+    print('entrou em listarDadosInstrumentais $ids');
+    instrumentaisList = []; // Limpar a lista antes de adicioná-los novamente
+    checkboxValues = []; // Limpar a lista dos valores do checkbox
 
-  Future.forEach(ids, (id) {
-    return FirebaseFirestore.instance
-        .collection("instrumentais")
-        .doc(id.toString())
-        .get()
-        .then((DocumentSnapshot snapshot) {
-      if (snapshot.exists) {
-        setState(() {
-          instrumentaisList.add(snapshot.data()); // Adicionar o instrumental à lista
-          checkboxValues.add(false); // Adicionar o valor do checkbox correspondente
-        });
-      } else {
-        print("O instrumental com o ID $id não foi encontrado.");
-      }
-    }).catchError((error) =>
-        print('Erro ao obter o dado do instrumental com o ID $id: $error'));
-  });
-}
-
-
+    Future.forEach(ids, (id) {
+      return FirebaseFirestore.instance
+          .collection("instrumentais")
+          .doc(id.toString())
+          .get()
+          .then((DocumentSnapshot snapshot) {
+        if (snapshot.exists) {
+          setState(() {
+            instrumentaisList
+                .add(snapshot.data()); // Adicionar o instrumental à lista
+            checkboxValues
+                .add(false); // Adicionar o valor do checkbox correspondente
+          });
+        } else {
+          print("O instrumental com o ID $id não foi encontrado.");
+        }
+      }).catchError((error) => print(
+              'Erro ao obter o dado do instrumental com o ID $id: $error'));
+    });
+  }
 
   void adicionarArrayCaixaEmbalagem(List<dynamic> instrumentais) {
-  db.collection("embalagem")
-      .orderBy("id", descending: true)
-      .limit(1)
-      .get()
-      .then((QuerySnapshot snapshot) {
-    if (snapshot.docs.isNotEmpty) {
-      int latestId = snapshot.docs[0]["id"] as int;
-      String documentId = snapshot.docs[0].id;
+    db
+        .collection("embalagem")
+        .orderBy("id", descending: true)
+        .limit(1)
+        .get()
+        .then((QuerySnapshot snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        int latestId = snapshot.docs[0]["id"] as int;
+        String documentId = snapshot.docs[0].id;
 
-      DocumentReference documentRef = db.collection("embalagem").doc(documentId);
+        DocumentReference documentRef =
+            db.collection("embalagem").doc(documentId);
 
-      documentRef.get().then((DocumentSnapshot documentSnapshot) {
-        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-        List<dynamic> existingInstrumentais = data["instrumentais"] ?? [];
-        List<dynamic> updatedInstrumentais = List.from(existingInstrumentais)..addAll(instrumentais);
+        documentRef.get().then((DocumentSnapshot documentSnapshot) {
+          Map<String, dynamic> data =
+              documentSnapshot.data() as Map<String, dynamic>;
+          List<dynamic> existingInstrumentais = data["instrumentais"] ?? [];
+          List<dynamic> updatedInstrumentais = List.from(existingInstrumentais)
+            ..addAll(instrumentais);
 
-        documentRef.update({"instrumentais": updatedInstrumentais}).then((_) {
-          print("Instrumentais adicionados com sucesso");
+          documentRef.update({"instrumentais": updatedInstrumentais}).then((_) {
+            print("Instrumentais adicionados com sucesso");
+          }).catchError((error) {
+            print("Erro ao adicionar instrumentais: $error");
+          });
         }).catchError((error) {
-          print("Erro ao adicionar instrumentais: $error");
+          print("Erro ao obter o documento: $error");
         });
-      }).catchError((error) {
-        print("Erro ao obter o documento: $error");
-      });
-    } else {
-      print("A tabela Embalagem está vazia.");
-    }
-  }).catchError((error) {
-    print('Erro ao obter a embalagem mais recente: $error');
-  });
-}
-
-
-
-
-
-
+      } else {
+        print("A tabela Embalagem está vazia.");
+      }
+    }).catchError((error) {
+      print('Erro ao obter a embalagem mais recente: $error');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -318,68 +332,71 @@ class _Teste extends State<Teste> {
                       ],
                     ),
                   ),
-                  leading:Checkbox(
-  value: checkboxValues[index],
-  onChanged: (bool? value) {
-    setState(() {
-      checkboxValues[index] = value ?? false;
-    });
-  },
-  activeColor: Color(0xFF6C1BC8), // Definir a cor aqui
-),
-
+                  leading: Checkbox(
+                    value: checkboxValues[index],
+                    onChanged: (bool? value) {
+                      setState(() {
+                        checkboxValues[index] = value ?? false;
+                      });
+                    },
+                    activeColor: Color(0xFF6C1BC8), // Definir a cor aqui
+                  ),
                 );
               },
             ),
           ),
-         SizedBox(height: 40,),
-              Center(
-                child: Column(
+          SizedBox(
+            height: 40,
+          ),
+          Center(
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            height: 70,
-                            child: Padding(
-                                    padding: const EdgeInsets.only(left: 15, right: 15),
-                              child:ElevatedButton(
-                onPressed: () {
-                  verificarMarcados();
-                },
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Finalizar',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
+                    Flexible(
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        height: 70,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 15, right: 15),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              verificarMarcados();
+                            },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Finalizar',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              elevation: 10.0,
+                              backgroundColor: Color(0xFF6C1BC8),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 20.0, vertical: 20.0),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
-                style: ElevatedButton.styleFrom(
-                  elevation: 10.0,
-                  backgroundColor: Color(0xFF6C1BC8),
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-        SizedBox(height: 40,),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 40,
+          ),
         ],
       ),
     );

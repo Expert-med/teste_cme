@@ -3,84 +3,76 @@ import 'package:flutter/material.dart';
 import 'package:teste_catalogo/homePage.dart';
 import 'observacaoPage.dart';
 import 'tipoPage.dart';
+class CriaPeronalizada extends StatefulWidget {
+  final List<dynamic> instrumentaisListParametro;
 
-class apenasEmbalar extends StatefulWidget {
+  CriaPeronalizada({required this.instrumentaisListParametro});
+
   @override
-  _apenasEmbalar createState() => _apenasEmbalar();
+  _CriaPeronalizadaState createState() => _CriaPeronalizadaState();
 }
 
-class _apenasEmbalar extends State<apenasEmbalar> {
+class _CriaPeronalizadaState extends State<CriaPeronalizada> {
   FirebaseFirestore db = FirebaseFirestore.instance;
   late int idAtual = 0;
   final _nomeCaixaController = TextEditingController();
+  List<Map<String, dynamic>> instrumentaisList = [];
 
   List<Map<String, dynamic>> caixas = [];
 
   @override
   void initState() {
     super.initState();
+    adicionarIdCaixaEmbalagem();
     buscarTipo(); // Call the method to fetch instrumentals
+    instrumentaisList.addAll(
+        widget.instrumentaisListParametro.map((dynamic item) => item as Map<String, dynamic>).toList());
   }
-
-  List<Map<String, dynamic>> instrumentaisList = [];
-  List<int> quantities = []; // List to store quantities
   
-  void adicionarArrayEmbalagemInstrumental(List<dynamic> instrumentais) {
-  db
-      .collection("embalagem")
+
+  List<int> quantities = []; // List to store quantities
+ 
+
+
+  void adicionarIdCaixaEmbalagem() {
+  db.collection("embalagem")
       .orderBy("id", descending: true)
       .limit(1)
       .get()
       .then((QuerySnapshot snapshot) {
-    late int idAtual = 0;
-    late int idCaixa = 0;
-
     if (snapshot.docs.isNotEmpty) {
-      int latestId = snapshot.docs[0]["id"] as int;
-      idAtual = latestId + 1;
+      int latestId = snapshot.docs[0]["id"];
+      String documentId = snapshot.docs[0].id;
+
+      DocumentReference documentRef =
+          db.collection("embalagem").doc(documentId);
+
+      documentRef.update({"idCaixa": 0}).then((_) {
+        print("idCaixa adicionado com sucesso");
+
+
+      }).catchError((error) {
+        print("Erro ao adicionar idCaixa: $error");
+      });
     } else {
-      idAtual = 1;
+      print("A tabela Embalagem está vazia.");
     }
-
-    Map<String, dynamic> novaCaixa = {
-      "caixa": false,
-      "id": idAtual,
-      "nome": _nomeCaixaController.text,
-      "idCaixa": idCaixa,
-      "instrumentais": [],
-    };
-
-    // Adicione os instrumentais à lista conforme a quantidade especificada
-    for (int i = 0; i < instrumentais.length; i++) {
-      int quantidade = instrumentais[i]['quantidade'];
-      String instrumentalNome = instrumentais[i]['nome'];
-      int instrumentaid = instrumentais[i]['id'] ?? 0;
-      int tipoId = instrumentais[i]['tipo'] ?? 0;
-      print('id do instrumental: $instrumentaid');
-      for (int j = 0; j < quantidade; j++) {
-        Map<String, dynamic> novoInstrumental = {
-          "id": instrumentaid,
-          "nome": instrumentalNome,
-          "tipo": tipoId,
-        };
-        novaCaixa['instrumentais'].add(novoInstrumental);
-      }
-    }
-
-    db.collection("embalagem").doc(idAtual.toString()).set(novaCaixa).then((_) {
-      print("Nova caixa criada com sucesso");
-    }).catchError((error) {
-      print("Erro ao criar nova caixa: $error");
-    });
   }).catchError((error) {
-    print('Erro ao obter a caixa mais recente: $error');
+    print('Erro ao obter a embalagem mais recente: $error');
   });
 }
 
 
+void adicionarArrayCaixaEmbalagem(List<dynamic> instrumentais) {
+  String nomeCaixa = _nomeCaixaController.text; // Obtenha o valor do campo de texto _nomeCaixaController
 
-  void adicionarArrayCaixaEmbalagem(List<dynamic> instrumentais) {
-  db.collection("embalagem")
+  if (nomeCaixa.isEmpty) {
+    print("O campo nome está vazio.");
+    return;
+  }
+
+  db
+      .collection("embalagem")
       .orderBy("id", descending: true)
       .limit(1)
       .get()
@@ -89,14 +81,17 @@ class _apenasEmbalar extends State<apenasEmbalar> {
       int latestId = snapshot.docs[0]["id"] as int;
       String documentId = snapshot.docs[0].id;
 
-      DocumentReference documentRef = db.collection("embalagem").doc(documentId);
+      DocumentReference documentRef =
+          db.collection("embalagem").doc(documentId);
 
       documentRef.get().then((DocumentSnapshot documentSnapshot) {
-        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        Map<String, dynamic> data =
+            documentSnapshot.data() as Map<String, dynamic>;
         List<dynamic> existingInstrumentais = data["instrumentais"] ?? [];
-        List<dynamic> updatedInstrumentais = List.from(existingInstrumentais)..addAll(instrumentais);
+        List<dynamic> updatedInstrumentais = List.from(existingInstrumentais)
+          ..addAll(instrumentais);
 
-        documentRef.update({"instrumentais": updatedInstrumentais}).then((_) {
+        documentRef.update({"instrumentais": updatedInstrumentais, "nome": nomeCaixa, "caixa": false}).then((_) {
           print("Instrumentais adicionados com sucesso");
         }).catchError((error) {
           print("Erro ao adicionar instrumentais: $error");
@@ -106,11 +101,28 @@ class _apenasEmbalar extends State<apenasEmbalar> {
       });
     } else {
       print("A tabela Embalagem está vazia.");
+      int idAtual = 0; // Fornecer o valor apropriado para idAtual
+
+      Map<String, dynamic> novaCaixa = {
+        "caixa": false,
+        "id": idAtual,
+        "nome": nomeCaixa,
+        "idCaixa": 0,
+        "instrumentais": instrumentais,
+      };
+
+      db.collection("embalagem").add(novaCaixa).then((DocumentReference documentRef) {
+        print("Nova caixa adicionada com sucesso");
+      }).catchError((error) {
+        print("Erro ao adicionar nova caixa: $error");
+      });
     }
   }).catchError((error) {
     print('Erro ao obter a embalagem mais recente: $error');
   });
 }
+
+
 
 
     void mostrarModalBar() {
@@ -326,10 +338,9 @@ class _apenasEmbalar extends State<apenasEmbalar> {
                           children: filteredInstrumentais.map((instrumental) {
                             String instrumentalNome = instrumental['nome'];
                             int instrumentalId = instrumental['id'];
-                            int instrumentalTipo = instrumental['tipo'];
                             return InkWell(
                               onTap: () {
-                                addInstrumental(instrumentalNome, instrumentalId, instrumentalTipo);
+                                addInstrumental(instrumentalNome, instrumentalId);
                                 print(instrumentaisList);
                                 Navigator.pop(context);
                               },
@@ -402,7 +413,7 @@ void fetchFilteredInstrumentais(int idTipo, String searchTerm) {
                   return GestureDetector(
                     onTap: () {
                       addInstrumental(
-                          instrumentalNome, instrumentalId, instrumentalTipo);
+                          instrumentalNome, instrumentalId);
                       print(instrumentaisList);
                       Navigator.pop(context); // Fechar a modal
                     },
@@ -432,298 +443,292 @@ void fetchFilteredInstrumentais(int idTipo, String searchTerm) {
 }
 
 
-  void addInstrumental(String instrumentalNome, int idInstrumental, int instrumentaltipo) {
-      setState(() {
-        instrumentaisList.add({
-          'nome': instrumentalNome,
-          'id': idInstrumental,
-          'tipo': instrumentaltipo,
-          'quantidade': 1,
-        });
+  void addInstrumental(String instrumentalNome, int idInstrumental) {
+    setState(() {
+      instrumentaisList.add({
+        'nome': instrumentalNome,
+        'id': idInstrumental,
+        'quantidade': 1,
       });
-    }
+    });
+  }
 
-  /*void listarDadosInstrumentais() {
-    print("Entrou na listarDadosInstrumentais");
-    FirebaseFirestore.instance
-        .collection("instrumentais")
-        .get()
-        .then((QuerySnapshot snapshot) {
-      // print("Got snapshot: ${snapshot.docs.length} documents");
-      if (snapshot.docs.isNotEmpty) {
-        setState(() {
-          caixas = snapshot.docs
-              .map((caixa) => caixa.data() as Map<String, dynamic>)
-              .toList();
-        });
-      } else {
-        print("A tabela Instrumentais está vazia.");
-      }
-    }).catchError((error) =>
-            print('Erro ao obter os dados da tabela Instrumentais: $error'));
-  }*/
+  void instrumentaisListParametro(String instrumentalNome, int idInstrumental) {
+  widget.instrumentaisListParametro.add({
+    'nome': instrumentalNome,
+    'id': idInstrumental,
+    'quantidade': 1,
+  });
+}
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar:AppBar(
-        toolbarHeight: 300,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF0066e2),
-                Color(0xFF6C1BC8),
-              ],
-              stops: [0, 1],
-            ),
+@override
+Widget build(BuildContext context) {
+  List<int> quantities = [];
+
+  return Scaffold(
+    appBar: AppBar(
+      toolbarHeight: 300,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF0066e2),
+              Color(0xFF6C1BC8),
+            ],
+            stops: [0, 1],
           ),
-          child: Align(
-            alignment: Alignment.bottomLeft,
-            child: Padding(
-              padding: EdgeInsets.only(left: 30, bottom: 30),
-              child: Stack(
-                alignment: Alignment.centerLeft,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        'APENAS EMBALAR',
-                        style: TextStyle(
-                          fontSize: 30,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+        ),
+        child: Align(
+          alignment: Alignment.bottomLeft,
+          child: Padding(
+            padding: EdgeInsets.only(left: 30, bottom: 30),
+            child: Stack(
+              alignment: Alignment.centerLeft,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      'CAIXA PERSONALIZADA',
+                      style: TextStyle(
+                        fontSize: 30,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.all(15),
-              child: Text("Nome da Embalagem"),
-            ),
-            TextFormField(
-              controller: _nomeCaixaController,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.black12,
-                border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(20),
-                ),
+    ),
+    body: Padding(
+      padding: EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.all(15),
+            child: Text("Nome da Embalagem"),
+          ),
+          TextFormField(
+            controller: _nomeCaixaController,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.black12,
+              border: OutlineInputBorder(
+                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(20),
               ),
             ),
-            SizedBox(
-              height: 20,
-            ),
-            Center(
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width,
-                          height: 70,
-                          child: ElevatedButton(
-                            onPressed: mostrarModalBar,
-                            child: Text(
-                              "Adicionar Instrumentais",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                              ),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Center(
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        height: 70,
+                        child: ElevatedButton(
+                          onPressed: mostrarModalBar,
+                          child: Text(
+                            "Adicionar Instrumentais",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
                             ),
-                            style: ElevatedButton.styleFrom(
-                              elevation: 10.0,
-                              backgroundColor: Color(0xFF6C1BC8),
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 20.0, vertical: 20.0),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            elevation: 10.0,
+                            backgroundColor: Color(0xFF6C1BC8),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 20.0, vertical: 20.0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
                             ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            SizedBox(height: 20),
-            Text(
-              'Instrumentais Adicionados:',
+          ),
+          SizedBox(height: 20),
+          Text(
+            'Instrumentais Adicionados:',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+  itemCount: instrumentaisList.length,
+  itemBuilder: (BuildContext context, int index) {
+    Map<String, dynamic> instrumental = instrumentaisList[index];
+    String instrumentalNome = instrumental['nome'];
+    int quantidade = instrumental['quantidade'] ?? 1;
+
+    if (index >= quantities.length) {
+      quantities.add(1);
+    }
+
+    return ListTile(
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              '$instrumentalNome',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: instrumentaisList.length,
-                itemBuilder: (BuildContext context, int index) {
-                  // Obtain the name of the instrumental from the map
+          ),
+          IconButton(
+            icon: Icon(Icons.remove),
+            onPressed: () {
+              setState(() {
+                if (quantidade > 1) {
+                  instrumental['quantidade'] = quantidade - 1;
+                } else {
+                  // Create a temporary list to store the remaining instrumentals
+                 List<Map<String, dynamic>> updatedList = List.from(instrumentaisList);
+updatedList.removeAt(index);
+instrumentaisList = updatedList;
 
-                  Map<String, dynamic> instrumental = instrumentaisList[index];
-                  String instrumentalNome = instrumental['nome'];
-                  int quantidade = instrumental['quantidade'];
-
-                  if (index >= quantities.length) {
-                    // If the quantity for the current item doesn't exist in the list, initialize it to 1
-                    quantities.add(1);
-                  }
-
-                  return ListTile(
-                    title: Row(
-                      children: [
-                        Expanded(
-                          child: Text('$instrumentalNome',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              )),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.remove),
-                          onPressed: () {
-                            setState(() {
-                              if (quantidade > 1) {
-                                // Se a quantidade for maior que 1, apenas diminua 1
-                                instrumental['quantidade'] = quantidade - 1;
-                              } else {
-                                // Se a quantidade for igual a 1, remova o instrumental da lista
-                                instrumentaisList.removeAt(index);
-                              }
-                            });
-                          },
-                        ),
-                        Text(
-                          '$quantidade',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.add),
-                          onPressed: () {
-                            setState(() {
-                              // Aumente a quantidade em 1
-                              instrumental['quantidade'] = quantidade + 1;
-                            });
-                            print('qtd: $instrumental[$quantities]');
-                          },
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                }
+              });
+            },
+          ),
+          Text(
+            '$quantidade',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
-            SizedBox(height: 20),
-            Center(
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width,
-                          height: 70,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              if (_nomeCaixaController.text.isEmpty ||
-                                  instrumentaisList.isEmpty) {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      title: Text(
-                                          'Nome da caixa ou lista de instrumentais está vazia. Não é possível criar a caixa.'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text('Continuar'),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
-                                return;
-                              } else {
-                                adicionarArrayEmbalagemInstrumental(
-                                    instrumentaisList);
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      title: Text(
-                                          'Embalagem Adicionada com sucesso!'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    AddObservacoes(idCaixa: idAtual),
-                                              ),
-                                            );
-                                          },
-                                          child: Text('Continuar'),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
-                              }
-                            },
-                            child: Text(
-                              "Criar embalagem",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                              ),
+          ),
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () {
+              setState(() {
+                instrumental['quantidade'] = quantidade + 1;
+              });
+              print('qtd: $quantidade');
+            },
+          ),
+        ],
+      ),
+    );
+  },
+),
+
+          ),
+          SizedBox(height: 20),
+          Center(
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        height: 70,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (_nomeCaixaController.text.isEmpty ||
+                                instrumentaisList.isEmpty) {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text(
+                                        'Nome da caixa ou lista de instrumentais está vazia. Não é possível criar a caixa.'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: Text('Continuar'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                              return;
+                            } else {
+                              print(instrumentaisList);
+                              adicionarArrayCaixaEmbalagem(
+                                  instrumentaisList);
+                                
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text(
+                                        'Embalagem Adicionada com sucesso!'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  AddObservacoes(
+                                                      idCaixa: 0),
+                                            ),
+                                          );
+                                        },
+                                        child: Text('Continuar'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            }
+                          },
+                          child: Text(
+                            "Criar embalagem",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
                             ),
-                            style: ElevatedButton.styleFrom(
-                              elevation: 10.0,
-                              backgroundColor:Color(0xFF6C1BC8),
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 20.0, vertical: 20.0),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            elevation: 10.0,
+                            backgroundColor: Color(0xFF6C1BC8),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 20.0, vertical: 20.0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
                             ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 }

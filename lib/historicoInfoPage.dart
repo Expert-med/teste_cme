@@ -254,7 +254,8 @@ class _historicoInfo extends State<historicoInfo> {
                           Container(
                             alignment: Alignment.topLeft,
                             child: Text(
-                              ' ${embalagem['infoAdicionais'] ? ['dataAtual'] ?? 0}  | ${embalagem['infoAdicionais'] ? ['horaCriacao'] ?? 0}',
+                              ' ${embalagem['infoAdicionais'] != null ? embalagem['infoAdicionais']['dataAtual'] ?? '0' : '0'}  | ${embalagem['infoAdicionais'] != null ? embalagem['infoAdicionais']['horaCriacao'] ?? '0' : '0'}',
+
                               style: TextStyle(
                                 fontSize: 20,
                                 color: Colors.black54,
@@ -281,7 +282,8 @@ class _historicoInfo extends State<historicoInfo> {
                           Container(
                             alignment: Alignment.topLeft,
                             child: Text(
-                              ' ${embalagem['infoAdicionais'] ? ['dataValidade'] ?? 0}',
+                              ' ${embalagem['infoAdicionais']?['dataValidade'] ?? 0}',
+
                               style: TextStyle(
                                 fontSize: 20,
                                 color: Colors.black54,
