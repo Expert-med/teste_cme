@@ -7,6 +7,7 @@ import 'package:teste_catalogo/catalogTipoCaixa.dart';
 import 'package:teste_catalogo/tipoPage.dart';
 
 import 'apenasEmbalarPage.dart';
+import 'cadInsturmental.dart';
 import 'catalogoCaixasTeste.dart';
 import 'formCriarCaixas.dart';
 import 'historicoPage.dart';
@@ -230,6 +231,54 @@ class catalogPage extends StatelessWidget {
                                 },
                                 child: Text(
                                   "Criar Caixa",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 10.0,
+                                  backgroundColor:
+                                       Color(0xFF6C1BC8),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 20.0, vertical: 20.0),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: 40,),
+              Center(
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            height: 70,
+                            child: Padding(
+                                    padding: const EdgeInsets.only(left: 15, right: 15),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => cadInstrumental()),
+                                  );
+                                },
+                                child: Text(
+                                  "Cadastrar instrumental",
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 15,

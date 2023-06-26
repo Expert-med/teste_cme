@@ -166,52 +166,67 @@ List<Map<String, dynamic>> instrumentais = [];
                       ),
                     ),
                   ),
-             Container(
-                    child: Flexible(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 15, right: 15, top: 20),
-                            child: Container(
-                              width: MediaQuery.of(context).size.width,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                color: Color(0xFF6C1BC8),
-                                borderRadius: BorderRadius.circular(20.0),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Quantidade de instrumentais cadastrados:',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      '${instrumentais.length}',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+            Container(
+  child: SingleChildScrollView(
+    child: Flexible(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(left: 15, right: 15, top: 20),
+            child: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                final double scaleFactor = constraints.maxWidth / 400; // Valor de referência para escala
+                final TextStyle textStyle = TextStyle(
+                  color: Colors.white,
+                  fontSize: 10 * scaleFactor, // Aumentando o tamanho do texto para 20
+                  fontWeight: FontWeight.bold,
+                );
+
+                return Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Color(0xFF6C1BC8),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Quantidade de instrumentais cadastrados:',
+                            style: textStyle,
+                          ),
+                        ),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            '${instrumentais.length}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10 * scaleFactor, // Aplicando a escala ao tamanho do texto
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
+),
+
                   // Outras colunas da sua grid...
                 ],
               ),
@@ -262,6 +277,8 @@ List<Map<String, dynamic>> instrumentais = [];
                 ],
               ),
             ),
+
+            
           ],
         ),
       ),

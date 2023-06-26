@@ -8,7 +8,6 @@ import 'firebase/firebase_options.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-
 class gerarEtiqueta extends StatefulWidget {
   final int idEmbalagem;
 
@@ -103,19 +102,17 @@ class _gerarEtiquetaState extends State<gerarEtiqueta> {
             },
           ),
         ),
-        body:Container(
-  color: Colors.purple, // Defina a cor de fundo desejada aqui
-  child: PdfPreview(
-    allowPrinting: true,
-    allowSharing: false,
-    canChangePageFormat: true,
-    canChangeOrientation: false,
-    build: (format) => generatePdfWithDatabaseData(format),
-  ),
-),
-
+        body: Container(
+          color: Colors.purple, // Defina a cor de fundo desejada aqui
+          child: PdfPreview(
+            allowPrinting: true,
+            allowSharing: false,
+            canChangePageFormat: true,
+            canChangeOrientation: false,
+            build: (format) => generatePdfWithDatabaseData(format),
+          ),
+        ),
       ),
-      
     );
   }
 
@@ -174,7 +171,6 @@ class _gerarEtiquetaState extends State<gerarEtiqueta> {
             );
           },
         ),
-        
       );
     } else {
       print('Não encontrei a embalagem');

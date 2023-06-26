@@ -29,6 +29,8 @@ class _AddObservacoes extends State<AddObservacoes> {
   TextEditingController _horaAtual = TextEditingController();
   List<Map<String, dynamic>> caixas = [];
 
+  int _imprimiuController = 0;
+
   void adicionarArrayObservacoes() {
     print('entrou em adicionarArrayCaixaEmbalagem');
     String dataValidade = _dataValidadeController.text;
@@ -53,7 +55,10 @@ class _AddObservacoes extends State<AddObservacoes> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: Text('Continuar',style: TextStyle(color:   Color(0xFF6C1BC8),)),
+                child: Text('Continuar',
+                    style: TextStyle(
+                      color: Color(0xFF6C1BC8),
+                    )),
               ),
             ],
           );
@@ -95,15 +100,48 @@ class _AddObservacoes extends State<AddObservacoes> {
                 actions: [
                   TextButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              gerarEtiqueta(idEmbalagem: int.parse(documentId)),
-                        ),
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Deseja Imprimir?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  _imprimiuController = 1;
+                                  processoImprimiu(_imprimiuController);
+
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => gerarEtiqueta(
+                                          idEmbalagem: int.parse(documentId)),
+                                    ),
+                                  );
+                                },
+                                child: Text('Sim'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  _imprimiuController = 0;
+                                  processoImprimiu(_imprimiuController);
+                                  Navigator.pushNamedAndRemoveUntil(
+                                    context,
+                                    '/',
+                                    (route) => false,
+                                  );
+                                },
+                                child: Text('Não'),
+                              ),
+                            ],
+                          );
+                        },
                       );
                     },
-                    child: Text('Continuar',style: TextStyle(color:   Color(0xFF6C1BC8),)),
+                    child: Text('Continuar',
+                        style: TextStyle(
+                          color: Color(0xFF6C1BC8),
+                        )),
                   ),
                 ],
               );
@@ -227,29 +265,34 @@ class _AddObservacoes extends State<AddObservacoes> {
                   ),
                 ),
               ),
-            GestureDetector(
-              onTap: () {
-                DateTime now = DateTime.now();
-                DatePicker.showDatePicker(
-                  context,
-                  showTitleActions: true,
-                  minTime: now,
-                  maxTime: DateTime(2100),
-                  onChanged: (date) {},
-                  onConfirm: (date) {
-                    setState(() {
-                      final formattedDate = DateFormat('dd/MM/yyyy').format(date);
-                      _dataValidadeController.text = formattedDate;
-                    });
-                  },
-                currentTime: now,
-                locale: LocaleType.pt,
-                theme: DatePickerTheme(
-                  cancelStyle: TextStyle(color:  Color(0xFF6C1BC8),), // Cor do botão cancelar
-                  doneStyle: TextStyle(color:   Color(0xFF6C1BC8),), // Cor do botão confirmar
-                ),
-              );
-            },
+              GestureDetector(
+                onTap: () {
+                  DateTime now = DateTime.now();
+                  DatePicker.showDatePicker(
+                    context,
+                    showTitleActions: true,
+                    minTime: now,
+                    maxTime: DateTime(2100),
+                    onChanged: (date) {},
+                    onConfirm: (date) {
+                      setState(() {
+                        final formattedDate =
+                            DateFormat('dd/MM/yyyy').format(date);
+                        _dataValidadeController.text = formattedDate;
+                      });
+                    },
+                    currentTime: now,
+                    locale: LocaleType.pt,
+                    theme: DatePickerTheme(
+                      cancelStyle: TextStyle(
+                        color: Color(0xFF6C1BC8),
+                      ), // Cor do botão cancelar
+                      doneStyle: TextStyle(
+                        color: Color(0xFF6C1BC8),
+                      ), // Cor do botão confirmar
+                    ),
+                  );
+                },
                 child: AbsorbPointer(
                   child: TextField(
                     controller: _dataValidadeController,
@@ -271,7 +314,6 @@ class _AddObservacoes extends State<AddObservacoes> {
                   ),
                 ),
               ),
-      
               SizedBox(
                 height: 20,
               ),
@@ -344,7 +386,7 @@ class _AddObservacoes extends State<AddObservacoes> {
                               ),
                               style: ElevatedButton.styleFrom(
                                 elevation: 10.0,
-                                backgroundColor:   Color(0xFF6C1BC8),
+                                backgroundColor: Color(0xFF6C1BC8),
                                 padding: EdgeInsets.symmetric(
                                     horizontal: 20.0, vertical: 20.0),
                                 shape: RoundedRectangleBorder(
@@ -364,5 +406,32 @@ class _AddObservacoes extends State<AddObservacoes> {
         ),
       ),
     );
+  }
+
+  void processoImprimiu(int imprimiu) {
+    db
+        .collection("embalagem")
+        .orderBy("id", descending: true)
+        .limit(1)
+        .get()
+        .then((QuerySnapshot snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        int latestId = snapshot.docs[0]["id"];
+        String documentId = snapshot.docs[0].id;
+
+        DocumentReference documentRef =
+            db.collection("embalagem").doc(documentId);
+
+        documentRef.update({"imprimiu": imprimiu}).then((_) {
+          print("imprimiu adicionado com sucesso");
+        }).catchError((error) {
+          print("Erro ao adicionar imprimiu: $error");
+        });
+      } else {
+        print("A tabela Embalagem está vazia.");
+      }
+    }).catchError((error) {
+      print('Erro ao obter a embalagem mais recente: $error');
+    });
   }
 }

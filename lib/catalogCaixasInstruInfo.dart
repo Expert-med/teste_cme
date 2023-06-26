@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 class instruInfo extends StatefulWidget {
-  final int idInstru;
+  final String idInstru;
 
   instruInfo({required this.idInstru});
 
@@ -15,73 +15,42 @@ class _instruInfo extends State<instruInfo> {
   FirebaseFirestore db = FirebaseFirestore.instance;
   List<Map<String, dynamic>> caixas = [];
   List<Map<String, dynamic>> tipos = [];
- 
- 
-final storage = FirebaseStorage.instanceFor(bucket: "gs://teste-teste-a8d80.appspot.com");
 
-final storageRef = FirebaseStorage.instance.ref();
+  final storage = FirebaseStorage.instanceFor(bucket: "gs://teste-teste-a8d80.appspot.com");
 
-int get idInstru => widget.idInstru;
+  final storageRef = FirebaseStorage.instance.ref();
+
+  String get idInstru => widget.idInstru;
 
   @override
   void initState() {
     super.initState();
-  
-    buscarInstrumentais(widget.idInstru);
-   
+    buscarInstrumentais(idInstru);
   }
-  
-  
 
- Future<String> buscarPathImagem(int idInstru) async {
-  final snapshot = await FirebaseFirestore.instance
-      .collection("instrumentais")
-      .where("id", isEqualTo: idInstru)
-      .get();
-
-  if (snapshot.docs.isNotEmpty) {
-    final data = snapshot.docs[0].data();
-    if (data.containsKey("img")) {
-      return data["img"];
-    }
-  }
-  throw Exception('Image path not found.');
-}
-
-
-  Future<String> buscarImagem(int idInstru) async {
-  String imagePath = await buscarPathImagem(idInstru);
-  final ref = storageRef.child(imagePath);
-  return await ref.getDownloadURL();
-}
-
-  void buscarInstrumentais(int idInstru) {
-    print(idInstru);
-
-   
-    FirebaseFirestore.instance
+  Future<String> buscarPathImagem(String idInstru) async {
+    final snapshot = await FirebaseFirestore.instance
         .collection("instrumentais")
         .where("id", isEqualTo: idInstru)
-        .get()
-        .then((QuerySnapshot snapshot) {
-      if (snapshot.docs.isNotEmpty) {
-        setState(() {
-          caixas = snapshot.docs
-              .map((caixa) => caixa.data() as Map<String, dynamic>)
-              .toList();
-          int idTipo = caixas[0]['tipo'];
-          buscarTipoInstrumental(idTipo);
-        });
-      } else {
-        print("Não foram encontradas caixas no banco de dados.");
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      final data = snapshot.docs[0].data();
+      if (data.containsKey("imagem")) {
+        return data["imagem"];
       }
-    }).catchError((error) {
-      print('Erro ao buscar as caixas: $error');
-    });
+    }
+    throw Exception('Image path not found.');
   }
 
-  void buscarTipoInstrumental(int idTipo) {
- 
+  Future<String> buscarImagem(String idInstru) async {
+    String imagePath = await buscarPathImagem(idInstru);
+    final ref = storageRef.child(imagePath);
+    return await ref.getDownloadURL();
+  }
+
+  void buscarTipoInstrumental(String idTipo) {
+    print('entrou em buscarTipoInstrumental ');
     FirebaseFirestore.instance
         .collection("tipo_instrumental")
         .where("id", isEqualTo: idTipo)
@@ -89,23 +58,45 @@ int get idInstru => widget.idInstru;
         .then((QuerySnapshot snapshot) {
       if (snapshot.docs.isNotEmpty) {
         setState(() {
-          tipos = snapshot.docs
-              .map((tipo) => tipo.data() as Map<String, dynamic>)
-              .toList();
+          tipos = snapshot.docs.map((tipo) => tipo.data() as Map<String, dynamic>).toList();
         });
       } else {
-        print(
-            "Não foram encontrados tipos de instrumentais no banco de dados.");
+        print("Não foram encontrados tipos de instrumentais no banco de dados.");
       }
     }).catchError((error) {
       print('Erro ao buscar os tipos de instrumentais: $error');
     });
   }
 
+    void buscarInstrumentais(String idInstru) {
+    FirebaseFirestore.instance
+        .collection("instrumentais")
+        .where("id", isEqualTo: idInstru)
+        .get()
+        .then((QuerySnapshot snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        setState(() {
+          caixas = snapshot.docs.map((caixa) => caixa.data() as Map<String, dynamic>).toList();
+          if (caixas.isNotEmpty) {
+            String idTipo = caixas[0]['tipo'].toString(); // Convert idTipo to String
+            buscarTipoInstrumental(idTipo); // Pass idTipoString to buscarTipoInstrumental
+          } else {
+            print("A lista de caixas está vazia.");
+          }
+        });
+      } else {
+        print("Não foram encontradas caixas no banco de dados");
+      }
+    }).catchError((error) {
+      print('Erro ao buscar os instrumentais: $error');
+    });
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:AppBar(
+      appBar: AppBar(
         toolbarHeight: 300,
         flexibleSpace: Container(
           decoration: BoxDecoration(
@@ -133,7 +124,7 @@ int get idInstru => widget.idInstru;
                       Text(
                         'INFORMAÇÕES ADICIONAIS',
                         style: TextStyle(
-                          fontSize: 30,
+                          fontSize: 20,
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
@@ -151,9 +142,8 @@ int get idInstru => widget.idInstru;
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: caixas.map((caixa) {
-              int id = caixa['id'];
+              String idTipo = caixas[0]['tipo'].toString();
               String nome = caixa['nome'];
-              int idTipo = caixa['tipo'];
 
               return Container(
                 width: MediaQuery.of(context).size.width,
@@ -168,7 +158,7 @@ int get idInstru => widget.idInstru;
                           Text(
                             'ID: ',
                             style: TextStyle(
-                              fontSize: 30,
+                              fontSize: 20,
                               color: Colors.black54,
                               fontWeight: FontWeight.bold,
                             ),
@@ -176,9 +166,9 @@ int get idInstru => widget.idInstru;
                           Container(
                             alignment: Alignment.topLeft,
                             child: Text(
-                              '$id',
+                              idTipo != null ? '$idTipo' : 'N/A',
                               style: TextStyle(
-                                fontSize: 30,
+                                fontSize: 20,
                                 color: Colors.black54,
                               ),
                             ),
@@ -194,7 +184,7 @@ int get idInstru => widget.idInstru;
                           Text(
                             'Nome do Instrumental: ',
                             style: TextStyle(
-                              fontSize: 30,
+                              fontSize: 20,
                               color: Colors.black54,
                               fontWeight: FontWeight.bold,
                             ),
@@ -204,7 +194,7 @@ int get idInstru => widget.idInstru;
                             child: Text(
                               ': ${nome[0].toUpperCase()}${nome.substring(1)}',
                               style: TextStyle(
-                                fontSize: 30,
+                                fontSize: 20,
                                 color: Colors.black54,
                               ),
                             ),
@@ -220,7 +210,7 @@ int get idInstru => widget.idInstru;
                           Text(
                             'Imagem: ',
                             style: TextStyle(
-                              fontSize: 30,
+                              fontSize: 20,
                               color: Colors.black54,
                               fontWeight: FontWeight.bold,
                             ),
@@ -234,8 +224,7 @@ int get idInstru => widget.idInstru;
                         alignment: Alignment.topLeft,
                         child: FutureBuilder(
                           future: buscarImagem(idInstru),
-                          builder: (BuildContext context,
-                              AsyncSnapshot<String> snapshot) {
+                          builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
                             if (snapshot.hasData) {
                               return Image.network(snapshot.data!);
                             } else if (snapshot.hasError) {
@@ -252,7 +241,7 @@ int get idInstru => widget.idInstru;
               );
             }).toList()
               ..addAll(tipos.map((tipo) {
-                int idTipo = tipo['id'];
+                String idTipo = tipo['id'] as String;
                 String nomeTipo = tipo['nome'];
                 // Restante do código para renderizar os dados do tipo
 
@@ -269,7 +258,7 @@ int get idInstru => widget.idInstru;
                             Text(
                               'Tipo Instrumental: ',
                               style: TextStyle(
-                                fontSize: 30,
+                                fontSize: 20,
                                 color: Colors.black54,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -277,9 +266,9 @@ int get idInstru => widget.idInstru;
                             Container(
                               alignment: Alignment.topLeft,
                               child: Text(
-                                ': ${nomeTipo[0].toUpperCase()}${nomeTipo.substring(1)} (Id: $idTipo)',
+                                ': ${nomeTipo[0].toUpperCase()}${nomeTipo.substring(1)} (Id: ${idTipo ?? 'N/A'})',
                                 style: TextStyle(
-                                  fontSize: 30,
+                                  fontSize: 20,
                                   color: Colors.black54,
                                 ),
                               ),

@@ -9,6 +9,7 @@ class historicoPage extends StatefulWidget {
 }
 
 class _historicoPage extends State<historicoPage> {
+  
   FirebaseFirestore db = FirebaseFirestore.instance;
   List<Map<String, dynamic>> embalagens = [];
   String searchTerm = '';
@@ -19,23 +20,29 @@ class _historicoPage extends State<historicoPage> {
     buscarCaixas();
   }
 
-  void buscarCaixas() {
-    db.collection("embalagem").get().then((QuerySnapshot snapshot) {
-      if (snapshot.docs.isNotEmpty) {
-        setState(() {
-          embalagens = snapshot.docs
-              .map((caixa) => caixa.data() as Map<String, dynamic>)
-              .toList();
-          embalagens.sort((a, b) =>
-              a['id'].compareTo(b['id'])); // Sort by 'id' in ascending order
-        });
-      } else {
-        print("Não foram encontradas caixas no banco de dados.");
-      }
-    }).catchError((error) {
-      print('Erro ao buscar as caixas: $error');
-    });
-  }
+void buscarCaixas() {
+  db.collection("embalagem").get().then((QuerySnapshot snapshot) {
+    if (snapshot.docs.isNotEmpty) {
+      setState(() {
+        embalagens = snapshot.docs
+            .map((caixa) => caixa.data() as Map<String, dynamic>)
+            .toList();
+        embalagens.sort((a, b) {
+  final int idA = a['id'] as int? ?? 0; // Assign 0 as default value if 'id' is null or not of type int
+  final int idB = b['id'] as int? ?? 0;
+  return idA.compareTo(idB);
+});
+
+        // Sort by 'id' in ascending order, handling null values
+      });
+    } else {
+      print("Não foram encontradas caixas no banco de dados.");
+    }
+  }).catchError((error) {
+    print('Erro ao buscar as caixas: $error');
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {

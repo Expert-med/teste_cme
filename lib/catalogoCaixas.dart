@@ -312,7 +312,7 @@ void verificarMarcados() {
                               context,
                               MaterialPageRoute(
                                   builder: (context) =>
-                                      instruInfo(idInstru: dados['id'])),
+                                      instruInfo(idInstru: dados['id'].toString())),
                             );
                           },
                           child: Container(

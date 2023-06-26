@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:teste_catalogo/homePage.dart';
+import 'catalogCaixasInstruInfo.dart';
 import 'tipoPage.dart';
 
 class formCriarCaixas extends StatefulWidget {
@@ -51,7 +52,8 @@ class _formCriarCaixasState extends State<formCriarCaixas> {
       for (int i = 0; i < instrumentais.length; i++) {
         int quantidade = instrumentais[i]['quantidade'];
         String instrumentalNome = instrumentais[i]['nome'];
-        int instrumentaid = instrumentais[i]['id'] ?? 0;
+        String instrumentaid = instrumentais[i]['id']?.toString() ?? '0';
+
         print('id isnutrmental $instrumentaid');
         for (int j = 0; j < quantidade; j++) {
           novaCaixa["instrumentais"].add(instrumentaid);
@@ -86,7 +88,7 @@ class _formCriarCaixasState extends State<formCriarCaixas> {
                     child: TextField(
                       controller: searchController,
                       decoration: InputDecoration(
-                        labelText: 'Search',
+                        labelText: 'Procurar',
                         suffixIcon: IconButton(
                           icon: Icon(Icons.clear),
                           onPressed: () {
@@ -224,155 +226,188 @@ class _formCriarCaixasState extends State<formCriarCaixas> {
     });
   }
 
-  void listarInstrumentais({required int idTipo}) {
-    print('Entrou em listarInstrumentais $idTipo');
-    List<Map<String, dynamic>> filteredInstrumentais = [];
-    TextEditingController searchController = TextEditingController();
 
-    FirebaseFirestore.instance
-        .collection("instrumentais")
-        .where("tipo", isEqualTo: idTipo)
-        .get()
-        .then((QuerySnapshot snapshot) {
-      if (snapshot.docs.isNotEmpty) {
-        List<Map<String, dynamic>> instrumentaisData = snapshot.docs.map((doc) {
-          Map<String, dynamic> instrumentalData =
-              doc.data() as Map<String, dynamic>;
-          return instrumentalData;
-        }).toList();
+//ajustar para receber String
+void listarInstrumentais({required dynamic idTipo}) {
+  print('Entrou em listarInstrumentais $idTipo');
+  List<Map<String, dynamic>> filteredInstrumentais = [];
+  TextEditingController searchController = TextEditingController();
 
-        filteredInstrumentais = List.from(instrumentaisData);
+  FirebaseFirestore.instance
+      .collection("instrumentais")
+      .where("tipo", isEqualTo: idTipo)
+      .get()
+      .then((QuerySnapshot snapshot) {
+    if (snapshot.docs.isNotEmpty) {
+      List<Map<String, dynamic>> instrumentaisData = snapshot.docs.map((doc) {
+        Map<String, dynamic> instrumentalData =
+            doc.data() as Map<String, dynamic>;
+        return instrumentalData;
+      }).toList();
 
-        showModalBottomSheet(
-          context: context,
-          builder: (BuildContext context) {
-            return StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
-                return Container(
-                  height: MediaQuery.of(context).size.height * 0.5,
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.arrow_back),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                            ),
-                            Expanded(
-                              child: TextField(
-                                controller: searchController,
-                                decoration: InputDecoration(
-                                  labelText: 'Procurar',
-                                  suffixIcon: IconButton(
-                                    icon: Icon(Icons.clear),
-                                    onPressed: () {
-                                      searchController.clear();
-                                      setState(
-                                        () {
-                                          filteredInstrumentais =
-                                              List.from(instrumentaisData);
-                                        },
-                                      );
-                                    },
-                                  ),
-                                  labelStyle: TextStyle(
-                                    color: Color(
-                                        0xFF6C1BC8), // Cor do texto "Procurar"
-                                  ),
-                                  prefixIcon: Icon(
-                                    Icons.search,
-                                    color: Color(0xFF6C1BC8), // Cor da lupa
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(
-                                        color: Colors
-                                            .grey), // Cor padrão do contorno
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(
-                                        color: Color(
-                                            0xFF6C1BC8)), // Cor do contorno ao clicar
-                                  ),
-                                ),
-                                onChanged: (value) {
-                                  setState(() {
-                                    filteredInstrumentais = instrumentaisData
-                                        .where((instrumental) =>
-                                            instrumental['nome']
-                                                .toString()
-                                                .toLowerCase()
-                                                .contains(
-                                                    value.toLowerCase()) ||
-                                            instrumental['id']
-                                                .toString()
-                                                .contains(value))
-                                        .toList();
-                                  });
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            children: filteredInstrumentais.map((instrumental) {
-                              String instrumentalNome = instrumental['nome'];
-                              int instrumentalId = instrumental['id'];
-                              return InkWell(
-                                onTap: () {
-                                  addInstrumental(
-                                      instrumentalNome, instrumentalId);
-                                  print(instrumentaisList);
-                                  Navigator.pop(context);
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.all(12),
-                                  child: Text(
-                                    instrumentalNome,
-                                    style: TextStyle(
-                                      fontSize: 25,
-                                      color: Colors.black54,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
+      filteredInstrumentais = List.from(instrumentaisData);
+
+      showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Container(
+                height: MediaQuery.of(context).size.height * 0.5,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.arrow_back),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          },
-        );
-      } else {
-        print("A tabela Instrumentais está vazia.");
-      }
-    }).catchError((error) =>
-            print('Erro ao obter os dados da tabela Instrumentais: $error'));
-  }
+                          Expanded(
+                            child: TextField(
+                              controller: searchController,
+                              decoration: InputDecoration(
+                                labelText: 'Procurar',
+                                suffixIcon: IconButton(
+                                  icon: Icon(Icons.clear),
+                                  onPressed: () {
+                                    searchController.clear();
+                                    setState(
+                                      () {
+                                        filteredInstrumentais =
+                                            List.from(instrumentaisData);
+                                      },
+                                    );
+                                  },
+                                ),
+                                labelStyle: TextStyle(
+                                  color: Color(
+                                      0xFF6C1BC8), // Cor do texto "Procurar"
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: Color(0xFF6C1BC8), // Cor da lupa
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide(
+                                      color: Colors.grey), // Cor padrão do contorno
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide(
+                                      color: Color(
+                                          0xFF6C1BC8)), // Cor do contorno ao clicar
+                                ),
+                              ),
+                             onChanged: (value) {
+  setState(() {
+    filteredInstrumentais = instrumentaisData
+        .where((instrumental) =>
+            instrumental['nome']
+                .toString()
+                .toLowerCase()
+                .contains(value.toLowerCase()) ||
+            instrumental['id']
+                .toString()
+                .contains(value))
+        .toList();
+  });
+},
 
-  void addInstrumental(String instrumentalNome, int idInstrumental) {
-    setState(() {
-      instrumentaisList.add({
-        'nome': instrumentalNome,
-        'id': idInstrumental,
-        'quantidade': 1,
-      });
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+  child: SingleChildScrollView(
+    child: Column(
+      mainAxisSize: MainAxisSize.max,
+      children: filteredInstrumentais.map((instrumental) {
+        String instrumentalNome = instrumental['nome'];
+        String instrumentalId = instrumental['id'].toString();
+        String instrumentalTipo = instrumental['tipo'].toString();
+        return InkWell(
+          onTap: () {
+            addInstrumental(instrumentalNome, instrumentalId);
+            print(instrumentaisList);
+            Navigator.pop(context);
+          },
+          child: Container(
+            padding: EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    instrumentalNome,
+                    style: TextStyle(
+                      fontSize: 25,
+                      color: Colors.black54,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => instruInfo(idInstru: instrumentalId.toString()),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.black12,
+                    ),
+                    padding: EdgeInsets.all(12),
+                    child: Icon(
+                      Icons.help,
+                      color: Colors.black54,
+                      size: 30,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    ),
+  ),
+),
+
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      );
+    } else {
+      print("A tabela Instrumentais está vazia.");
+    }
+  }).catchError(
+      (error) => print('Erro ao obter os dados da tabela Instrumentais: $error'));
+}
+
+
+ void addInstrumental(String instrumentalNome, String idInstrumental) {
+  setState(() {
+    instrumentaisList.add({
+      'nome': instrumentalNome,
+      'id': idInstrumental,
+      'quantidade': 1,
     });
-  }
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
