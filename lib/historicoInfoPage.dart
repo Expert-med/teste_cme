@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'catalogCaixasInstruInfo.dart';
 import 'gerarEtiquetaPage.dart';
@@ -19,9 +20,12 @@ class _historicoInfo extends State<historicoInfo> {
   List<Map<String, dynamic>> caixa = [];
   List<Map<String, dynamic>> instrumentaisList = [];
   int imprimiuTeste = 0;
+ 
   @override
   void initState() {
     super.initState();
+    print('inicializador');
+    print(widget.idEmbalagem);
     buscarDadosEmbalagem(widget.idEmbalagem);
     caixa = [];
   }
@@ -428,11 +432,11 @@ class _historicoInfo extends State<historicoInfo> {
         return GestureDetector(
           onTap: () {
            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      instruInfo(idInstru: instrumental['id'])),
-                            );
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      instruInfo(idInstru: instrumental['id'])),
+            );
           },
           child: ListTile(
             title: Padding(

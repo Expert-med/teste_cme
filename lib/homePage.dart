@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:teste_catalogo/scannerQrCode.dart';
+import 'scannerQrCode.dart';
 
 import 'historicoPage.dart';
 
@@ -11,7 +13,7 @@ class homePage extends StatefulWidget {
 class _homePage extends State<homePage> {
   FirebaseFirestore db = FirebaseFirestore.instance;
   List<Map<String, dynamic>> embalagens = [];
-List<Map<String, dynamic>> instrumentais = [];
+  List<Map<String, dynamic>> instrumentais = [];
 
   @override
   void initState() {
@@ -277,7 +279,53 @@ List<Map<String, dynamic>> instrumentais = [];
                 ],
               ),
             ),
-
+            SizedBox(height: 20,),
+            Center(
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            height: 70,
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 15, right: 15),
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Scanner(),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  'Ler Etiqueta',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 10.0,
+                                  backgroundColor: Color(0xFF6C1BC8),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 20.0, vertical: 20.0),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                              ),
+                            )),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
             
           ],
         ),

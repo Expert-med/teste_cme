@@ -98,7 +98,7 @@ class _CadInstrumentalState extends State<cadInstrumental> {
     try {
       String fileName =
           'img-$shortId'; // Usando o ID do instrumental como nome do arquivo
-      String ref = 'instrumental/$fileName.jpeg';
+      String ref = 'instrumentais/$fileName.jpeg';
       final storageRef = FirebaseStorage.instance.ref();
       return storageRef.child(ref).putFile(
             file,

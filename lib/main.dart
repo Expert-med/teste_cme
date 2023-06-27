@@ -1,9 +1,17 @@
+import 'dart:typed_data';
+
+
 import 'package:flutter/material.dart';
+import 'package:teste_catalogo/catalogoCaixas.dart';
 import 'package:teste_catalogo/homePage.dart';
 import 'catalogPage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
+import 'package:qlevar_router/qlevar_router.dart';
+
+import 'historicoInfoPage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,18 +22,39 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  FirebaseFirestore db = FirebaseFirestore.instance;
+  List<Map<String, dynamic>> embalagens = [];
+
+ 
+      
+
+  
+  
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+
+
+    return GetMaterialApp(
       title: 'Catalog',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home:
-          HomePage(), // Altere esta linha para definir a página inicial como HomePage()
+      initialRoute: '/',
+      getPages: [
+        GetPage(
+          name: '/',
+          page: () => HomePage(),
+        ),
+        GetPage(
+          name: '/historicoInfo',
+          page: () => historicoInfo(idEmbalagem: 1),
+        ),
+      ],
+      home: HomePage(),
     );
   }
 }
+
 
 class HomePage extends StatefulWidget {
   @override

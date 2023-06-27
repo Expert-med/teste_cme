@@ -15,7 +15,7 @@ class CriaPeronalizada extends StatefulWidget {
 
 class _CriaPeronalizadaState extends State<CriaPeronalizada> {
   FirebaseFirestore db = FirebaseFirestore.instance;
-  late int idAtual = 0;
+  int idAtual = 0;
   final _nomeCaixaController = TextEditingController();
   List<Map<String, dynamic>> instrumentaisList = [];
 
@@ -26,8 +26,9 @@ class _CriaPeronalizadaState extends State<CriaPeronalizada> {
     super.initState();
     adicionarIdCaixaEmbalagem();
     buscarTipo(); // Call the method to fetch instrumentals
-    instrumentaisList.addAll(
-        widget.instrumentaisListParametro.map((dynamic item) => item as Map<String, dynamic>).toList());
+   instrumentaisList.clear(); // Clear the list before adding items
+  instrumentaisList.addAll(
+      widget.instrumentaisListParametro.map((dynamic item) => item as Map<String, dynamic>).toList());
   }
   
 
@@ -42,7 +43,7 @@ class _CriaPeronalizadaState extends State<CriaPeronalizada> {
       .get()
       .then((QuerySnapshot snapshot) {
     if (snapshot.docs.isNotEmpty) {
-      int latestId = snapshot.docs[0]["id"];
+      int latestId = snapshot.docs[0]["id"] as int;
       String documentId = snapshot.docs[0].id;
 
       DocumentReference documentRef =
@@ -62,10 +63,8 @@ class _CriaPeronalizadaState extends State<CriaPeronalizada> {
     print('Erro ao obter a embalagem mais recente: $error');
   });
 }
-
-
 void adicionarArrayCaixaEmbalagem(List<dynamic> instrumentais) {
-  String nomeCaixa = _nomeCaixaController.text; // Obtenha o valor do campo de texto _nomeCaixaController
+  String nomeCaixa = _nomeCaixaController.text;
 
   if (nomeCaixa.isEmpty) {
     print("O campo nome está vazio.");
@@ -89,10 +88,26 @@ void adicionarArrayCaixaEmbalagem(List<dynamic> instrumentais) {
         Map<String, dynamic> data =
             documentSnapshot.data() as Map<String, dynamic>;
         List<dynamic> existingInstrumentais = data["instrumentais"] ?? [];
-        List<dynamic> updatedInstrumentais = List.from(existingInstrumentais)
-          ..addAll(instrumentais);
-
-        documentRef.update({"instrumentais": updatedInstrumentais, "nome": nomeCaixa, "caixa": false}).then((_) {
+        
+        for (var instrumental in instrumentais) {
+          int quantidade = instrumental["quantidade"] ?? 1;
+        
+            for (int i = 0; i < quantidade; i++) {
+            existingInstrumentais.add({
+              "tipo": instrumental["tipo"],
+              "nome": instrumental["nome"],
+              "id": instrumental["id"],
+            });
+          }
+         
+          
+        }
+        
+        documentRef.update({
+          "instrumentais": existingInstrumentais,
+          "nome": nomeCaixa,
+          "caixa": false
+        }).then((_) {
           print("Instrumentais adicionados com sucesso");
         }).catchError((error) {
           print("Erro ao adicionar instrumentais: $error");
@@ -122,7 +137,6 @@ void adicionarArrayCaixaEmbalagem(List<dynamic> instrumentais) {
     print('Erro ao obter a embalagem mais recente: $error');
   });
 }
-
 
 
 
@@ -337,12 +351,12 @@ void adicionarArrayCaixaEmbalagem(List<dynamic> instrumentais) {
     child: Column(
       mainAxisSize: MainAxisSize.max,
       children: filteredInstrumentais.map((instrumental) {
-        String instrumentalNome = instrumental['nome'];
+        String instrumentalNome = instrumental['nome'].toString();
         String instrumentalId = instrumental['id'].toString();
-        String instrumentalTipo = instrumental['tipo'].toString();
+        int instrumentalTipo = instrumental['tipo'];
         return InkWell(
           onTap: () {
-            addInstrumental(instrumentalNome, instrumentalId);
+            addInstrumental(instrumentalNome, instrumentalId, instrumentalTipo);
             print(instrumentaisList);
             Navigator.pop(context);
           },
@@ -443,11 +457,11 @@ void fetchFilteredInstrumentais(int idTipo, String searchTerm) {
                 children: instrumentaisData.map((instrumental) {
                   String instrumentalNome = instrumental['nome'].toString();
                   String instrumentalId = instrumental['id'].toString();
-                  String instrumentalTipo = instrumental['tipo'];
+                  int instrumentalTipo = instrumental['tipo'];
                   return GestureDetector(
                     onTap: () {
                       addInstrumental(
-                          instrumentalNome, instrumentalId);
+                          instrumentalNome, instrumentalId,instrumentalTipo);
                       print(instrumentaisList);
                       Navigator.pop(context); // Fechar a modal
                     },
@@ -477,23 +491,33 @@ void fetchFilteredInstrumentais(int idTipo, String searchTerm) {
 }
 
 
-  void addInstrumental(String instrumentalNome, String idInstrumental) {
+  void addInstrumental(String instrumentalNome, String idInstrumental, int instrumentalTipo) {
+  // Verifica se o instrumental já existe na lista
+  bool instrumentalExists = instrumentaisList.any((instrumental) =>
+      instrumental['nome'] == instrumentalNome &&
+      instrumental['id'] == idInstrumental);
+
+  // Se o instrumental não existir na lista, adicione-o
+  if (!instrumentalExists) {
     setState(() {
       instrumentaisList.add({
         'nome': instrumentalNome,
         'id': idInstrumental,
+        'tipo': instrumentalTipo,
         'quantidade': 1,
       });
     });
   }
+}
 
-  void instrumentaisListParametro(String instrumentalNome, String idInstrumental) {
+
+  /*void instrumentaisListParametro(String instrumentalNome, String idInstrumental) {
   widget.instrumentaisListParametro.add({
     'nome': instrumentalNome,
     'id': idInstrumental,
     'quantidade': 1,
   });
-}
+}*/
 
 @override
 Widget build(BuildContext context) {

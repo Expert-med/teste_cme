@@ -91,7 +91,7 @@ void verificarMarcados() {
               ),
               TextButton(
                 onPressed: () {
-                  adicionarArrayCaixaEmbalagem(selectedInstrumentais);
+                  //adicionarArrayCaixaEmbalagem(selectedInstrumentais);
                   Navigator.push(
                     context,
                     MaterialPageRoute(

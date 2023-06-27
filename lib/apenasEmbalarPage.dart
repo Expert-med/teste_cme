@@ -28,15 +28,15 @@ class _apenasEmbalar extends State<apenasEmbalar> {
   List<Map<String, dynamic>> instrumentaisList = [];
   List<int> quantities = []; // List to store quantities
   
-  void adicionarArrayEmbalagemInstrumental(List<dynamic> instrumentais) {
+void adicionarArrayEmbalagemInstrumental(List<dynamic> instrumentais) {
   db
       .collection("embalagem")
       .orderBy("id", descending: true)
       .limit(1)
       .get()
       .then((QuerySnapshot snapshot) {
-    late int idAtual = 0;
-    late int idCaixa = 0;
+    int idAtual = 0;
+    int idCaixa = 0;
 
     if (snapshot.docs.isNotEmpty) {
       int latestId = snapshot.docs[0]["id"] as int;
@@ -57,9 +57,9 @@ class _apenasEmbalar extends State<apenasEmbalar> {
     for (int i = 0; i < instrumentais.length; i++) {
       int quantidade = instrumentais[i]['quantidade'];
       String instrumentalNome = instrumentais[i]['nome'];
-      int instrumentaid = instrumentais[i]['id'] ?? 0;
+      String instrumentaid = instrumentais[i]['id'];
       int tipoId = instrumentais[i]['tipo'] ?? 0;
-      print('id do instrumental: $instrumentaid');
+
       for (int j = 0; j < quantidade; j++) {
         Map<String, dynamic> novoInstrumental = {
           "id": instrumentaid,
@@ -79,8 +79,6 @@ class _apenasEmbalar extends State<apenasEmbalar> {
     print('Erro ao obter a caixa mais recente: $error');
   });
 }
-
-
 
   void adicionarArrayCaixaEmbalagem(List<dynamic> instrumentais) {
   db.collection("embalagem")
@@ -329,7 +327,7 @@ class _apenasEmbalar extends State<apenasEmbalar> {
       children: filteredInstrumentais.map((instrumental) {
         String instrumentalNome = instrumental['nome'];
         String instrumentalId = instrumental['id'].toString();
-        String instrumentalTipo = instrumental['tipo'].toString();
+        int instrumentalTipo = instrumental['tipo'];
         return InkWell(
           onTap: () {
             addInstrumental(instrumentalNome, instrumentalId, instrumentalTipo);
@@ -432,7 +430,7 @@ void fetchFilteredInstrumentais(int idTipo, String searchTerm) {
                 children: instrumentaisData.map((instrumental) {
                   String instrumentalNome = instrumental['nome'].toString();
                   String instrumentalId = instrumental['id'].toString();
-                  String instrumentalTipo = instrumental['tipo']; // Convert to String
+                  int instrumentalTipo = instrumental['tipo']; // Convert to String
                   return GestureDetector(
                     onTap: () {
                       addInstrumental(
@@ -466,7 +464,7 @@ void fetchFilteredInstrumentais(int idTipo, String searchTerm) {
 }
 
 
-void addInstrumental(String instrumentalNome, String idInstrumental, String instrumentalTipo) { 
+void addInstrumental(String instrumentalNome, String idInstrumental, int instrumentalTipo) { 
   setState(() {
     instrumentaisList.add({
       'nome': instrumentalNome,

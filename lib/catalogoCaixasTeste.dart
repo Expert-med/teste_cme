@@ -19,6 +19,29 @@ class _CatalogoCaixasTesteState extends State<CatalogoCaixasTeste> {
     buscarCaixas();
   }
 
+  Future<void> removeLastDocument() async {
+  FirebaseFirestore db = FirebaseFirestore.instance;
+
+  // Get the reference to the last document in the collection
+  QuerySnapshot snapshot = await db
+      .collection("embalagem")
+      .orderBy("id", descending: true)
+      .limit(1)
+      .get();
+  
+  if (snapshot.docs.isNotEmpty) {
+    DocumentSnapshot document = snapshot.docs[0];
+    DocumentReference documentRef = document.reference;
+
+    // Delete the document
+    await documentRef.delete();
+
+    print("Last document removed successfully.");
+  } else {
+    print("The collection 'embalagem' is empty.");
+  }
+}
+
   void buscarCaixas() {
     db.collection("caixas").get().then((QuerySnapshot snapshot) {
       if (snapshot.docs.isNotEmpty) {
@@ -121,6 +144,39 @@ class _CatalogoCaixasTesteState extends State<CatalogoCaixasTeste> {
             ),
           ),
         ),
+        leading: IconButton(
+  icon: Icon(Icons.home),
+  onPressed: () {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Deseja continuar?'),
+          content: Text('Se sim, todas as informações serão perdidas.'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancelar',style:TextStyle(color: Color(0xFF6C1BC8),)),
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+            ),
+            TextButton(
+              child: Text('Continuar',style:TextStyle(color: Color(0xFF6C1BC8),)),
+              onPressed: () {
+                removeLastDocument();
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/',
+                  (route) => false,
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  },
+),
       ),
       body: SingleChildScrollView(
         child: Column(
