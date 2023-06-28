@@ -413,7 +413,7 @@ void listarInstrumentais({required dynamic idTipo}) {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 300,
+        toolbarHeight: 200,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -453,227 +453,233 @@ void listarInstrumentais({required dynamic idTipo}) {
           ),
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.all(15),
-              child: Text("Nome da Caixa"),
-            ),
-            TextFormField(
-              controller: _nomeCaixaController,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.black12,
-                border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Center(
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width,
-                          height: 70,
-                          child: ElevatedButton(
-                            onPressed: mostrarModalBar,
-                            child: Text(
-                              "Adicionar Instrumentais",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              elevation: 10.0,
-                              backgroundColor: Color(0xFF6C1BC8),
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 20.0, vertical: 20.0),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Instrumentais Adicionados:',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: instrumentaisList.length,
-                itemBuilder: (BuildContext context, int index) {
-                  // Obtain the name of the instrumental from the map
-
-                  Map<String, dynamic> instrumental = instrumentaisList[index];
-                  String instrumentalNome = instrumental['nome'];
-                  int quantidade = instrumental['quantidade'];
-
-                  if (index >= quantities.length) {
-                    // If the quantity for the current item doesn't exist in the list, initialize it to 1
-                    quantities.add(1);
-                  }
-
-                  return ListTile(
-                    title: Row(
-                      children: [
-                        Expanded(
-                          child: Text('$instrumentalNome',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              )),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.remove),
-                          onPressed: () {
-                            setState(() {
-                              if (quantidade > 1) {
-                                // Se a quantidade for maior que 1, apenas diminua 1
-                                instrumental['quantidade'] = quantidade - 1;
-                              } else {
-                                // Se a quantidade for igual a 1, remova o instrumental da lista
-                                instrumentaisList.removeAt(index);
-                              }
-                            });
-                          },
-                        ),
-                        Text(
-                          '$quantidade',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.add),
-                          onPressed: () {
-                            setState(() {
-                              // Aumente a quantidade em 1
-                              instrumental['quantidade'] = quantidade + 1;
-                            });
-                            print('qtd: $instrumental[$quantities]');
-                          },
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-            SizedBox(height: 20),
-            Center(
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width,
-                          height: 70,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              if (_nomeCaixaController.text.isEmpty ||
-                                  instrumentaisList.isEmpty) {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      title: Text(
-                                          'Nome da caixa ou lista de instrumentais está vazia. Não é possível criar a caixa.'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text('Continuar',
-                                              style: TextStyle(
-                                                color: Color(0xFF6C1BC8),
-                                              )),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
-                                return;
-                              } else {
-                                adicionarArrayCaixaInstrumental(
-                                    instrumentaisList);
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      title:
-                                          Text('Caixa Adicionada com sucesso!'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pushNamedAndRemoveUntil(
-                                              context,
-                                              '/',
-                                              (route) => false,
-                                            );
-                                          },
-                                          child: Text('Continuar',
-                                              style: TextStyle(
-                                                color: Color(0xFF6C1BC8),
-                                              )),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
-                              }
-                            },
-                            child: Text(
-                              "Criar caixa",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              elevation: 10.0,
-                              backgroundColor: Color(0xFF6C1BC8),
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 20.0, vertical: 20.0),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
+    body: SingleChildScrollView(
+  child: Padding(
+    padding: EdgeInsets.all(12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.all(15),
+          child: Text("Nome da Caixa"),
         ),
-      ),
+        TextFormField(
+          controller: _nomeCaixaController,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.black12,
+            border: OutlineInputBorder(
+              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 20,
+        ),
+        Center(
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      height: 70,
+                      child: ElevatedButton(
+                        onPressed: mostrarModalBar,
+                        child: Text(
+                          "Adicionar Instrumentais",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          elevation: 10.0,
+                          backgroundColor: Color(0xFF6C1BC8),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 20.0,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 20),
+        Text(
+          'Instrumentais Adicionados:',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: instrumentaisList.length,
+          itemBuilder: (BuildContext context, int index) {
+            Map<String, dynamic> instrumental = instrumentaisList[index];
+            String instrumentalNome = instrumental['nome'];
+            int quantidade = instrumental['quantidade'];
+
+            if (index >= quantities.length) {
+              quantities.add(1);
+            }
+
+            return ListTile(
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '$instrumentalNome',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.remove),
+                    onPressed: () {
+                      setState(() {
+                        if (quantidade > 1) {
+                          instrumental['quantidade'] = quantidade - 1;
+                        } else {
+                          instrumentaisList.removeAt(index);
+                        }
+                      });
+                    },
+                  ),
+                  Text(
+                    '$quantidade',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.add),
+                    onPressed: () {
+                      setState(() {
+                        instrumental['quantidade'] = quantidade + 1;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        SizedBox(height: 20),
+        Center(
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      height: 70,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (_nomeCaixaController.text.isEmpty ||
+                              instrumentaisList.isEmpty) {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text(
+                                    'Nome da caixa ou lista de instrumentais está vazia. Não é possível criar a caixa.',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text(
+                                        'Continuar',
+                                        style: TextStyle(
+                                          color: Color(0xFF6C1BC8),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                            return;
+                          } else {
+                            adicionarArrayCaixaInstrumental(instrumentaisList);
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text('Caixa Adicionada com sucesso!'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pushNamedAndRemoveUntil(
+                                          context,
+                                          '/',
+                                          (route) => false,
+                                        );
+                                      },
+                                      child: Text(
+                                        'Continuar',
+                                        style: TextStyle(
+                                          color: Color(0xFF6C1BC8),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          }
+                        },
+                        child: Text(
+                          "Criar caixa",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          elevation: 10.0,
+                          backgroundColor: Color(0xFF6C1BC8),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 20.0,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  ),
+),
+
+
     );
   }
 }

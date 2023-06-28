@@ -97,7 +97,7 @@ class _instruInfo extends State<instruInfo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 300,
+        toolbarHeight: 200,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(

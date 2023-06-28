@@ -285,7 +285,7 @@ class _CadInstrumentalState extends State<cadInstrumental> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 300,
+        toolbarHeight: 200,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(

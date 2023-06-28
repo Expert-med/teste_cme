@@ -6,6 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:qlevar_router/qlevar_router.dart';
 
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+
+
 import 'gerarEtiquetaPage.dart';
 import 'historicoInfoPage.dart';
 
@@ -59,6 +62,7 @@ class _Scanner extends State<Scanner> {
       }
     });
   }
+  
 
 
   Future<void> getIdEmbalagemFromFirebase(int idEmbalagemInt) async {
@@ -101,7 +105,7 @@ class _Scanner extends State<Scanner> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 300,
+        toolbarHeight: 200,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -147,7 +151,7 @@ class _Scanner extends State<Scanner> {
             flex: 5,
             child: QRView(
               key: qrKey,
-              onQRViewCreated: onQRViewCreated,
+              onQRViewCreated: onQRViewCreated,   
             ),
           ),
           Expanded(

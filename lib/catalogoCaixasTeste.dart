@@ -105,7 +105,7 @@ class _CatalogoCaixasTesteState extends State<CatalogoCaixasTeste> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 300,
+        toolbarHeight: 200,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(

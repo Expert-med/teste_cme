@@ -20,7 +20,7 @@ class _historicoInfo extends State<historicoInfo> {
   List<Map<String, dynamic>> caixa = [];
   List<Map<String, dynamic>> instrumentaisList = [];
   int imprimiuTeste = 0;
- 
+
   @override
   void initState() {
     super.initState();
@@ -258,112 +258,138 @@ class _historicoInfo extends State<historicoInfo> {
                       ),
                       SizedBox(height: 20),
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 20),
-                            child: Text(
-                              'Data de Criação: ',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.black54,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            alignment: Alignment.topLeft,
-                            child: Text(
-                              ' ${embalagem['infoAdicionais'] != null ? embalagem['infoAdicionais']['dataAtual'] ?? '0' : '0'}  | ${embalagem['infoAdicionais'] != null ? embalagem['infoAdicionais']['horaCriacao'] ?? '0' : '0'}',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Expanded(
+      child: Padding(
+         padding: const EdgeInsets.only(left: 20),
+        child: Text(
+          'Data de Criação: ',
+          style: TextStyle(
+            fontSize: 20,
+            color: Colors.black54,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    ),
+    Expanded(
+      flex: 2,
+      child: Container(
+        alignment: Alignment.topLeft,
+        child: Text(
+          ' ${embalagem['infoAdicionais'] != null ? embalagem['infoAdicionais']['dataAtual'] ?? '0' : '0'}  | ${embalagem['infoAdicionais'] != null ? embalagem['infoAdicionais']['horaCriacao'] ?? '0' : '0'}',
+          style: TextStyle(
+            fontSize: 20,
+            color: Colors.black54,
+          ),
+        ),
+      ),
+    ),
+  ],
+),
+
                       SizedBox(height: 20),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 20),
-                            child: Text(
-                              'Data de Validade:',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.black54,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            alignment: Alignment.topLeft,
-                            child: Text(
-                              ' ${embalagem['infoAdicionais']?['dataValidade'] ?? 0}',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    Row(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Expanded(
+      child: Padding(
+        padding: const EdgeInsets.only(left: 20),
+        child: Text(
+          'Data de Validade:',
+          style: TextStyle(
+            fontSize: 20,
+            color: Colors.black54,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    ),
+    Expanded(
+      flex: 2,
+      child: Container(
+        alignment: Alignment.topLeft,
+        child: Text(
+          ' ${embalagem['infoAdicionais']?['dataValidade'] ?? 0}',
+          style: TextStyle(
+            fontSize: 20,
+            color: Colors.black54,
+          ),
+        ),
+      ),
+    ),
+  ],
+),
+
                       SizedBox(height: 20),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 20),
-                            child: Text(
-                              'Nome do Funcionário: ',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.black54,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            alignment: Alignment.topLeft,
-                            child: Text(
-                              '${embalagem['infoAdicionais']?['nomeFuncionario'] ?? 0}',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                     Row(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Expanded(
+      child: Padding(
+        padding: const EdgeInsets.only(left: 20),
+        child: Text(
+          'Nome do Funcionário: ',
+          style: TextStyle(
+            fontSize: 17,
+            color: Colors.black54,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    ),
+    Expanded(
+      flex: 2,
+      child: Container(
+        alignment: Alignment.topLeft,
+        child: Text(
+          '${embalagem['infoAdicionais']?['nomeFuncionario'] ?? ''}',
+          style: TextStyle(
+            fontSize: 20,
+            color: Colors.black54,
+          ),
+        ),
+      ),
+    ),
+  ],
+),
+
                       SizedBox(height: 20),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 20),
-                            child: Text(
-                              'Observações:',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.black54,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            alignment: Alignment.topLeft,
-                            child: Text(
-                              ' ${embalagem['infoAdicionais']?['observacoes'] ?? ''}',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                     Row(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Expanded(
+      child: Padding(
+        padding: const EdgeInsets.only(left: 20),
+        child: Text(
+          'Observações:',
+          style: TextStyle(
+            fontSize: 20,
+            color: Colors.black54,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    ),
+    Expanded(
+      flex: 2,
+      child: Container(
+        alignment: Alignment.topLeft,
+        child: Flexible(
+          child: Text(
+            '${embalagem['infoAdicionais']?['observacoes'] ?? ''}',
+            style: TextStyle(
+              fontSize:  20,
+              color: Colors.black54,
+            ),
+          ),
+        ),
+      ),
+    ),
+  ],
+),
+
                     ],
                   ),
                 ),
@@ -383,28 +409,34 @@ class _historicoInfo extends State<historicoInfo> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Nome Caixa: ',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.black54,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Container(
-                              alignment: Alignment.topLeft,
-                              child: Text(
-                                ': ${nomeCaixa[0].toUpperCase()}${nomeCaixa.substring(1)} (Id: $idCaixa)',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Expanded(
+      child: Text(
+        'Nome Caixa: ',
+        style: TextStyle(
+          fontSize: 20,
+          color: Colors.black54,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+    Expanded(
+      flex: 2,
+      child: Container(
+        alignment: Alignment.topLeft,
+        child: Text(
+          '${nomeCaixa[0].toUpperCase()}${nomeCaixa.substring(1)} (Id: $idCaixa)',
+          style: TextStyle(
+            fontSize:  20,
+            color: Colors.black54,
+          ),
+        ),
+      ),
+    ),
+  ],
+),
+
                         SizedBox(
                           height: 20,
                         ),
@@ -422,61 +454,64 @@ class _historicoInfo extends State<historicoInfo> {
                           ],
                         ),
                         Container(
-  width: 300, // Defina a largura desejada aqui
-  child: ListView.builder(
-    shrinkWrap: true,
-    itemCount: instrumentaisList.length,
-    itemBuilder: (context, index) {
-      var instrumental = instrumentaisList[index];
-      if (instrumental != null && instrumental['nome'] != null) {
-        return GestureDetector(
-          onTap: () {
-           Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      instruInfo(idInstru: instrumental['id'])),
-            );
-          },
-          child: ListTile(
-            title: Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '- ${instrumental['nome']}',
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: Colors.black54,
+                          width: 300, // Defina a largura desejada aqui
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: instrumentaisList.length,
+                            itemBuilder: (context, index) {
+                              var instrumental = instrumentaisList[index];
+                              if (instrumental != null &&
+                                  instrumental['nome'] != null) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => instruInfo(
+                                              idInstru: instrumental['id'])),
+                                    );
+                                  },
+                                  child: ListTile(
+                                    title: Padding(
+                                      padding: const EdgeInsets.only(top: 20),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                '- ${instrumental['nome']}',
+                                                style: TextStyle(
+                                                  fontSize: 20,
+                                                  color: Colors.black54,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Text(
+                                            '${instrumental['id']}',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              color: Colors.black54,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                // Handle null values or missing data
+                                return Container();
+                              }
+                            },
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    '${instrumental['id']}',
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.black54,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      } else {
-        // Handle null values or missing data
-        return Container();
-      }
-    },
-  ),
-),
-
                         SizedBox(
                           height: 20,
                         ),

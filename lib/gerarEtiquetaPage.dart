@@ -104,7 +104,8 @@ class _gerarEtiquetaState extends State<gerarEtiqueta> {
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            title: Text('Deseja Imprimir?'),
+                            title: Text('Você imprimiu?'),
+                            
                             actions: [
                               TextButton(
                                 onPressed: () {
@@ -159,7 +160,7 @@ class _gerarEtiquetaState extends State<gerarEtiqueta> {
     final pdf = pw.Document(version: PdfVersion.pdf_1_5, compress: true);
     if (embalagem.isNotEmpty) {
       final String qrCodeData =
-          '$qrCode?route=/historicoInfo&idEmbalagem=$idEmbalagem';
+          '$idEmbalagem';
 
       
 
