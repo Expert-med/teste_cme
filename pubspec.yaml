@@ -52,6 +52,7 @@ dependencies:
 
   webview_flutter: ^3.0.0
   mobile_scanner: ^3.3.0
+  simple_barcode_scanner: ^0.0.8
 
 dev_dependencies:
   flutter_test:

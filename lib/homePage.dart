@@ -1,8 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:teste_catalogo/scannerQrCode.dart';
-import 'scannerQrCode.dart';
-
+import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
+import 'package:teste_catalogo/historicoInfoPage.dart';
 import 'historicoPage.dart';
 
 class homePage extends StatefulWidget {
@@ -21,6 +20,32 @@ class _homePage extends State<homePage> {
     buscarCaixas();
     buscarInstrumentais();
   }
+
+  int result = 0;
+  
+  Future<void> abrirScanner() async {
+    String? scannedCode = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const SimpleBarcodeScannerPage(),
+      ),
+    );
+    if (scannedCode != null) {
+      int parsedResult = int.tryParse(scannedCode) ?? 0;
+      setState(() {
+        result = parsedResult;
+        irParaHistorico(result);
+      });
+    }
+  }
+
+  Future<void> irParaHistorico(int result) async {
+    var res = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => historicoInfo(idEmbalagem: result),
+      ),
+    );}
 
   void buscarCaixas() {
     db.collection("embalagem").get().then((QuerySnapshot snapshot) {
@@ -281,12 +306,7 @@ class _homePage extends State<homePage> {
                                   const EdgeInsets.only(left: 15, right: 15),
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => Scanner(),
-                                    ),
-                                  );
+                                  abrirScanner();
                                 },
                                 child: Text(
                                   'Ler Etiqueta',
