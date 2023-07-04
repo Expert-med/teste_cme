@@ -1,0 +1,2 @@
+0 esterelizado
+1 normal

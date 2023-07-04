@@ -18,6 +18,8 @@ class _CadInstrumentalState extends State<cadInstrumental> {
   final _tipoController = TextEditingController();
   final _tipoControllerAux = TextEditingController();
   final _fotoController = TextEditingController();
+  final _fotoControllers = <TextEditingController>[];
+  final _imagePaths = <String>[];
   Uuid uuid = Uuid();
 
   List<Reference> refs = [];
@@ -27,37 +29,91 @@ class _CadInstrumentalState extends State<cadInstrumental> {
   double total = 0;
   final FirebaseStorage storage = FirebaseStorage.instance;
 
+  int currentImageIndex = 0;
+
   List<Map<String, dynamic>> tipo = [];
 
   String shortId = '';
 
   File? _selectedImage;
+  
+ String idInstruAtual = '';
 
   @override
   void initState() {
     super.initState();
-    generateId();
+    idInstruAtual = generateShortId();
     buscarTiposInstrumentos();
     loadImages();
   }
+
+  @override
+  void dispose() {
+    _nomeController.dispose();
+    _tipoControllerAux.dispose();
+    for (var controller in _fotoControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
   String generateId() {
-  String uniqueId = uuid.v4();
-  shortId = uniqueId.substring(0, 4).toUpperCase(); // Extrair os primeiros 4 caracteres
-  return shortId;
-}
+    String uniqueId = uuid.v4();
+    shortId = uniqueId
+        .substring(0, 4)
+        .toUpperCase(); // Extrair os primeiros 4 caracteres
+    return shortId;
+  }
+  
+  
 
-
+    
+  Widget buildGridView() {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: _fotoControllers.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+      ),
+      itemBuilder: (BuildContext context, int index) {
+        return Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Image.network(
+                _imagePaths[index],
+                fit: BoxFit.cover,
+              ),
+            ),
+            Positioned(
+              top: 2,
+              right: 2,
+              child: IconButton(
+                icon: Icon(Icons.close),
+                onPressed: () {
+                  deleteImage(index);
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   loadImages() async {
     // final SharedPreferences prefs = await _prefs;
     // arquivos = prefs.getStringList('images') ?? [];
 
     // if (arquivos.isEmpty) {
+      
     refs = (await storage.ref('images').listAll()).items;
     for (var ref in refs) {
       final arquivo = await ref.getDownloadURL();
       arquivos.add(arquivo);
     }
+    
     // prefs.setStringList('images', arquivos);
     // }
     setState(() => loading = false);
@@ -67,57 +123,48 @@ class _CadInstrumentalState extends State<cadInstrumental> {
     await storage.ref(refs[index].fullPath).delete();
     arquivos.removeAt(index);
     refs.removeAt(index);
+    _imagePaths.removeAt(index);
     setState(() {});
   }
 
-  Future<void> uploadImageToFirebaseStorage(
-      File imageFile, String instrumentalId, String imagePath) async {
-    try {
-      String fileName =
-          'img-$instrumentalId'; // Use the instrumental ID as the file name
-      Reference storageRef =
-          FirebaseStorage.instance.ref().child('instrumentais/$fileName');
-      await storageRef.putFile(imageFile);
 
-      // Update the Firestore document with the image path
-      await FirebaseFirestore.instance
-          .collection('instrumentais')
-          .doc(instrumentalId)
-          .update({
-        'imagem': imagePath,
-      });
+Future<UploadTask> upload(String path, String instrumentalId, int index) async {
+  File file = File(path);
+  try {
+    String fileName = 'img-$instrumentalId-${index + 1}.jpeg';
+    String ref = 'instrumentais/$fileName';
+    final storageRef = FirebaseStorage.instance.ref();
+    UploadTask task = storageRef.child(ref).putFile(
+      file,
+      SettableMetadata(
+        cacheControl: "public, max-age=300",
+        contentType: "instrumentais/jpeg",
+        customMetadata: {
+          "user": "123",
+        },
+      ),
+    );
 
-      print('Image uploaded successfully. Image path: $imagePath');
-    } catch (error) {
-      print('Error uploading image to Firebase Storage: $error');
-    }
+    task.snapshotEvents.listen((TaskSnapshot snapshot) async {
+      if (snapshot.state == TaskState.success) {
+        String imagePath = await storageRef.child(ref).getDownloadURL();
+        setState(() {
+          _imagePaths.add(imagePath); // Adicionar o caminho da imagem à lista
+        });
+      }
+    });
+
+    return task;
+  } on FirebaseException catch (e) {
+    throw Exception('Erro no upload: ${e.code}');
   }
+}
 
-  Future<UploadTask> upload(String path, String instrumentalId) async {
-    File file = File(path);
-    try {
-      String fileName =
-          'img-$shortId'; // Usando o ID do instrumental como nome do arquivo
-      String ref = 'instrumentais/$fileName.jpeg';
-      final storageRef = FirebaseStorage.instance.ref();
-      return storageRef.child(ref).putFile(
-            file,
-            SettableMetadata(
-              cacheControl: "public, max-age=300",
-              contentType: "instrumentais/jpeg",
-              customMetadata: {
-                "user": "123",
-              },
-            ),
-          );
-    } on FirebaseException catch (e) {
-      throw Exception('Erro no upload: ${e.code}');
-    }
-  }
+
 
   Future<XFile?> getImage() async {
     final ImagePicker _picker = ImagePicker();
-    XFile? image = await _picker.pickImage(source: ImageSource.camera);
+    XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     return image;
   }
 
@@ -127,14 +174,23 @@ class _CadInstrumentalState extends State<cadInstrumental> {
     return image;
   }
 
-  pickAndUploadImage() async {
-    XFile? imageFile = await getGalleryImage();
-    String instrumentalId = shortId;
+  String generateShortId() {
+    String uniqueId = Uuid().v4();
+    String shortId = uniqueId.substring(0, 4).toUpperCase();
+    return shortId;
+  }
+  
+ Future<void> pickAndUploadImage() async {
+  XFile? imageFile = await getImage();
 
-    if (imageFile != null) {
-      File file = File(imageFile.path);
+  if (imageFile != null) {
+    File file = File(imageFile.path);
 
-      UploadTask task = await upload(file.path, shortId);
+    bool imageExists = _imagePaths.contains(file.path);
+    if (!imageExists) {
+      int index = currentImageIndex; // Use the current index
+
+      UploadTask task = await upload(file.path, idInstruAtual, index);
 
       task.snapshotEvents.listen((TaskSnapshot snapshot) async {
         if (snapshot.state == TaskState.running) {
@@ -142,28 +198,18 @@ class _CadInstrumentalState extends State<cadInstrumental> {
             uploading = true;
             total = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           });
-        } else if (snapshot.state == TaskState.success) {
-          final photoRef = snapshot.ref;
-
-          arquivos.add(await photoRef.getDownloadURL());
-          refs.add(photoRef);
-
-          setState(() => uploading = false);
-
-          String filePath = photoRef.fullPath;
-
-          // Update the text field with the image path
-          setState(() {
-            _fotoController.text = filePath;
-            uploading = false;
-
-            // Call the method to save the image path in Firestore
-            uploadImageToFirebaseStorage(file, instrumentalId, filePath);
-          });
         }
       });
+
+      // Increment the current index
+      currentImageIndex++;
     }
   }
+}
+
+
+
+
 
   Future<void> buscarTiposInstrumentos() async {
     try {
@@ -182,26 +228,40 @@ class _CadInstrumentalState extends State<cadInstrumental> {
   }
 
   Future<String> cadastrarInstrumental() async {
-   
-    int tipo = int.parse(_tipoControllerAux.text);
-    String imagemUrl =
-        _fotoController.text; // Obter o caminho da imagem do campo de texto
+  
+  int tipo = int.parse(_tipoControllerAux.text);
+  String imagemUrl = _fotoController.text; // Obtenha o caminho da imagem do campo de texto
 
-    Map<String, dynamic> embalagem = {
-      "id": shortId,
-      "nome": _nomeController.text,
-      "tipo": tipo,
-      "imagem": imagemUrl, // Adicionar o caminho da imagem ao documento
-    };
+  Map<String, dynamic> instrumentalData = {
+    "id": idInstruAtual,
+    "nome": _nomeController.text,
+    "tipo": tipo,
+    "imagemUrl": imagemUrl, // Adicione o caminho da imagem ao documento
+  };
 
-    DocumentReference documentRef = db.collection("instrumentais").doc(shortId);
+  DocumentReference documentRef = db.collection("instrumentais").doc(idInstruAtual);
 
-    await documentRef.set(embalagem).catchError((error) {
-      print('Erro ao adicionar dados: $error');
-    });
+  await documentRef.set(instrumentalData).catchError((error) {
+    print('Erro ao adicionar dados: $error');
+  });
 
-    return shortId;
+  return idInstruAtual;
+}
+
+Future<void> removeImages() async {
+  final FirebaseStorage storage = FirebaseStorage.instance;
+  final ListResult result = await storage.ref('instrumentais').listAll();
+
+  for (final Reference ref in result.items) {
+    final String fileName = ref.name;
+
+    if (fileName.contains('$idInstruAtual')) {
+      await ref.delete();
+    }
   }
+}
+
+// Chame a função removeImages() para remover as imagens
 
   void mostrarModalBar() {
     List<Map<String, dynamic>> filteredCaixas = List.from(tipo);
@@ -284,7 +344,7 @@ class _CadInstrumentalState extends State<cadInstrumental> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar:AppBar(
         toolbarHeight: 200,
         flexibleSpace: Container(
           decoration: BoxDecoration(
@@ -310,7 +370,7 @@ class _CadInstrumentalState extends State<cadInstrumental> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        'CADASTRAR INSTRUMENTAL',
+                        'CATÁLOGO DE CAIXAS',
                         style: TextStyle(
                           fontSize: 30,
                           color: Colors.white,
@@ -324,6 +384,39 @@ class _CadInstrumentalState extends State<cadInstrumental> {
             ),
           ),
         ),
+        leading: IconButton(
+  icon: Icon(Icons.home),
+  onPressed: () {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Deseja continuar?'),
+          content: Text('Se sim, todas as informações serão perdidas.'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancelar',style:TextStyle(color: Color(0xFF6C1BC8),)),
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+            ),
+            TextButton(
+              child: Text('Continuar',style:TextStyle(color: Color(0xFF6C1BC8),)),
+              onPressed: () {
+                removeImages();
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/',
+                  (route) => false,
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  },
+),
       ),
       body: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
@@ -390,116 +483,138 @@ class _CadInstrumentalState extends State<cadInstrumental> {
                   SizedBox(
                     height: 20,
                   ),
-                  Padding(
-                    padding: EdgeInsets.all(15),
-                    child: Text("Foto"),
-                  ),
-                  TextFormField(
-                    controller: _fotoController,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.black12,
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide.none,
+             Center(
+  child: Column(
+    children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Flexible(
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: 60,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 0, right: 0),
+                child: Flexible(
+                  child: ElevatedButton(
+                    child: Text('Adicionar Imagem'),
+                    onPressed: () {
+                      pickAndUploadImage();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      elevation: 10.0,
+                      backgroundColor: Color(0xFF6C1BC8),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20.0,
+                        vertical: 20.0,
+                      ),
+                      shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
+                      textStyle: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                      ),
                     ),
-                    readOnly: true,
-                    onTap: pickAndUploadImage,
                   ),
-                   SizedBox(
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ],
+  ),
+),
+
+
+                  SizedBox(
                     height: 20,
                   ),
-                  Center(
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            height: 60,
-                            child: Padding(
-                                    padding: const EdgeInsets.only(left: 0, right: 0),
-                              child: ElevatedButton(
-                                onPressed: () {
-                                   cadastrarInstrumental();
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text('Instrumental cadastrado com sucesso!'),
-                            actions: [
-                              
-                              TextButton(
-                                onPressed: () {
-                                  
-                                  Navigator.pushNamedAndRemoveUntil(
-                                    context,
-                                    '/',
-                                    (route) => false,
-                                  );
-                                },
-                                child: Text('Finalizar'),
-                              ),
-                            ],
-                          );
-                        },
+                 
+                  Text(
+                    'Imagens Inseridas:',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 8.0),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: _imagePaths.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return Image.network(
+                        _imagePaths[index],
+                        fit: BoxFit.cover,
                       );
-                                },
-                                child: Text(
-                                  "Cadastrar",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  elevation: 10.0,
-                                  backgroundColor:
-                                       Color(0xFF6C1BC8),
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 20.0, vertical: 20.0),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
+                    },
+                  ),
+                  SizedBox(height: 20,),
+                   Center(
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: SizedBox(
+                                width: MediaQuery.of(context).size.width,
+                                height: 60,
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.only(left: 0, right: 0),
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      cadastrarInstrumental();
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            title: Text(
+                                                'Instrumental cadastrado com sucesso!'),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator
+                                                      .pushNamedAndRemoveUntil(
+                                                    context,
+                                                    '/',
+                                                    (route) => false,
+                                                  );
+                                                },
+                                                child: Text('Finalizar'),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                    child: Text(
+                                      "Cadastrar",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      elevation: 10.0,
+                                      backgroundColor: Color(0xFF6C1BC8),
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 20.0, vertical: 20.0),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-                  SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: arquivos.isEmpty
-                        ? const Center(child: Text('Não há imagens ainda.'))
-                        : ListView.builder(
-                            itemBuilder: (BuildContext context, index) {
-                              return ListTile(
-                                leading: SizedBox(
-                                  width: 60,
-                                  height: 40,
-                                  child: Image(
-                                    image: CachedNetworkImageProvider(
-                                        arquivos[index]),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                title: Text('Image $index'),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () => deleteImage(index),
-                                ),
-                              );
-                            },
-                            itemCount: arquivos.length,
-                          ),
                   ),
                 ],
               ),

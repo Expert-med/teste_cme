@@ -2,7 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:teste_catalogo/homePage.dart';
+
 import 'catalogCaixasInstruInfo.dart';
 import 'observacaoPage.dart';
 import 'tipoPage.dart';

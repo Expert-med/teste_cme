@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:teste_catalogo/catalogCaixasInstruInfo.dart';
 import 'package:teste_catalogo/homePage.dart';
-import 'catalogCaixasInstruInfo.dart';
-import 'tipoPage.dart';
+
+import '../tipoPage.dart';
 
 class formCriarCaixas extends StatefulWidget {
   @override

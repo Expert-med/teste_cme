@@ -1,8 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
+
 import 'package:teste_catalogo/historicoInfoPage.dart';
-import 'historicoPage.dart';
+import 'package:teste_catalogo/historicoPage.dart';
+import 'package:teste_catalogo/autenticacao/usuarios/login_page.dart';
+import 'package:teste_catalogo/autenticacao/usuarios/cadastro_page.dart';
 
 class homePage extends StatefulWidget {
   @override
@@ -24,12 +27,14 @@ class _homePage extends State<homePage> {
   int result = 0;
   
   Future<void> abrirScanner() async {
+    print('abri');
     String? scannedCode = await Navigator.push<String>(
       context,
       MaterialPageRoute(
         builder: (context) => const SimpleBarcodeScannerPage(),
       ),
     );
+    print(scannedCode);
     if (scannedCode != null) {
       int parsedResult = int.tryParse(scannedCode) ?? 0;
       setState(() {
@@ -40,6 +45,7 @@ class _homePage extends State<homePage> {
   }
 
   Future<void> irParaHistorico(int result) async {
+    print('cheguei');
     var res = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -241,94 +247,6 @@ class _homePage extends State<homePage> {
                   ),
 
                   // Outras colunas da sua grid...
-                ],
-              ),
-            ),
-            Center(
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            height: 70,
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.only(left: 15, right: 15),
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => historicoPage(),
-                                    ),
-                                  );
-                                },
-                                child: Text(
-                                  'Historico de Embalagens',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  elevation: 10.0,
-                                  backgroundColor: Color(0xFF6C1BC8),
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 20.0, vertical: 20.0),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                ),
-                              ),
-                            )),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 20,),
-            Center(
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            height: 70,
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.only(left: 15, right: 15),
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  abrirScanner();
-                                },
-                                child: Text(
-                                  'Ler Etiqueta',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  elevation: 10.0,
-                                  backgroundColor: Color(0xFF6C1BC8),
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 20.0, vertical: 20.0),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                ),
-                              ),
-                            )),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),

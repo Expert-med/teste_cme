@@ -1,6 +1,7 @@
 // Tipos de instrumentais contidos nesse instrumentais
 
 
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase/firebase_options.dart';
@@ -22,7 +23,7 @@ class _instrumentalPage extends State<instrumentalPage> {
   void initState() {
     super.initState();
     buscarTipo(widget.idTipo);
-  }
+   }
 
   
 void buscarTipo(int idTipo) {
@@ -43,6 +44,8 @@ void buscarTipo(int idTipo) {
     print('Erro ao buscar as caixas: $error');
   });
 }
+
+
 
 
  @override

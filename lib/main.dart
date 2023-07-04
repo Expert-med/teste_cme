@@ -2,9 +2,11 @@ import 'dart:typed_data';
 
 
 import 'package:flutter/material.dart';
+import 'package:teste_catalogo/bottomNav/catalogPage.dart';
+import 'package:teste_catalogo/bottomNav/funcoesPage.dart';
 import 'package:teste_catalogo/catalogoCaixas.dart';
 import 'package:teste_catalogo/homePage.dart';
-import 'catalogPage.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -65,7 +67,9 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   List<Widget> _widgetOptions = [
     homePage(),
+     FuncoesPage(),
     catalogPage(),
+  
   ];
 
   void _onItemTapped(int index) {
@@ -88,8 +92,13 @@ class _HomePageState extends State<HomePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.info),
+            label: 'Funções',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.info),
             label: 'Catálogos',
           ),
+         
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,

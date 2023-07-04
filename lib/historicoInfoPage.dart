@@ -168,7 +168,7 @@ class _historicoInfo extends State<historicoInfo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 300,
+        toolbarHeight: 200,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -258,138 +258,134 @@ class _historicoInfo extends State<historicoInfo> {
                       ),
                       SizedBox(height: 20),
                       Row(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    Expanded(
-      child: Padding(
-         padding: const EdgeInsets.only(left: 20),
-        child: Text(
-          'Data de Criação: ',
-          style: TextStyle(
-            fontSize: 20,
-            color: Colors.black54,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    ),
-    Expanded(
-      flex: 2,
-      child: Container(
-        alignment: Alignment.topLeft,
-        child: Text(
-          ' ${embalagem['infoAdicionais'] != null ? embalagem['infoAdicionais']['dataAtual'] ?? '0' : '0'}  | ${embalagem['infoAdicionais'] != null ? embalagem['infoAdicionais']['horaCriacao'] ?? '0' : '0'}',
-          style: TextStyle(
-            fontSize: 20,
-            color: Colors.black54,
-          ),
-        ),
-      ),
-    ),
-  ],
-),
-
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 20),
+                              child: Text(
+                                'Data de Criação: ',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.black54,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Container(
+                              alignment: Alignment.topLeft,
+                              child: Text(
+                                ' ${embalagem['infoAdicionais'] != null ? embalagem['infoAdicionais']['dataAtual'] ?? '0' : '0'}  | ${embalagem['infoAdicionais'] != null ? embalagem['infoAdicionais']['horaCriacao'] ?? '0' : '0'}',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                       SizedBox(height: 20),
-                    Row(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    Expanded(
-      child: Padding(
-        padding: const EdgeInsets.only(left: 20),
-        child: Text(
-          'Data de Validade:',
-          style: TextStyle(
-            fontSize: 20,
-            color: Colors.black54,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    ),
-    Expanded(
-      flex: 2,
-      child: Container(
-        alignment: Alignment.topLeft,
-        child: Text(
-          ' ${embalagem['infoAdicionais']?['dataValidade'] ?? 0}',
-          style: TextStyle(
-            fontSize: 20,
-            color: Colors.black54,
-          ),
-        ),
-      ),
-    ),
-  ],
-),
-
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 20),
+                              child: Text(
+                                'Data de Validade:',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.black54,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Container(
+                              alignment: Alignment.topLeft,
+                              child: Text(
+                                ' ${embalagem['infoAdicionais']?['dataValidade'] ?? 0}',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                       SizedBox(height: 20),
-                     Row(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    Expanded(
-      child: Padding(
-        padding: const EdgeInsets.only(left: 20),
-        child: Text(
-          'Nome do Funcionário: ',
-          style: TextStyle(
-            fontSize: 17,
-            color: Colors.black54,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    ),
-    Expanded(
-      flex: 2,
-      child: Container(
-        alignment: Alignment.topLeft,
-        child: Text(
-          '${embalagem['infoAdicionais']?['nomeFuncionario'] ?? ''}',
-          style: TextStyle(
-            fontSize: 20,
-            color: Colors.black54,
-          ),
-        ),
-      ),
-    ),
-  ],
-),
-
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 20),
+                              child: Text(
+                                'Nome do Funcionário: ',
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  color: Colors.black54,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Container(
+                              alignment: Alignment.topLeft,
+                              child: Text(
+                                '${embalagem['infoAdicionais']?['nomeFuncionario'] ?? ''}',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                       SizedBox(height: 20),
-                     Row(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    Expanded(
-      child: Padding(
-        padding: const EdgeInsets.only(left: 20),
-        child: Text(
-          'Observações:',
-          style: TextStyle(
-            fontSize: 20,
-            color: Colors.black54,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    ),
-    Expanded(
-      flex: 2,
-      child: Container(
-        alignment: Alignment.topLeft,
-        child: Flexible(
-          child: Text(
-            '${embalagem['infoAdicionais']?['observacoes'] ?? ''}',
-            style: TextStyle(
-              fontSize:  20,
-              color: Colors.black54,
-            ),
-          ),
-        ),
-      ),
-    ),
-  ],
-),
-
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 20),
+                              child: Text(
+                                'Observações:',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.black54,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Container(
+                              alignment: Alignment.topLeft,
+                              child: Flexible(
+                                child: Text(
+                                  '${embalagem['infoAdicionais']?['observacoes'] ?? ''}',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -409,34 +405,33 @@ class _historicoInfo extends State<historicoInfo> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    Expanded(
-      child: Text(
-        'Nome Caixa: ',
-        style: TextStyle(
-          fontSize: 20,
-          color: Colors.black54,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    ),
-    Expanded(
-      flex: 2,
-      child: Container(
-        alignment: Alignment.topLeft,
-        child: Text(
-          '${nomeCaixa[0].toUpperCase()}${nomeCaixa.substring(1)} (Id: $idCaixa)',
-          style: TextStyle(
-            fontSize:  20,
-            color: Colors.black54,
-          ),
-        ),
-      ),
-    ),
-  ],
-),
-
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Nome Caixa: ',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.black54,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Container(
+                                alignment: Alignment.topLeft,
+                                child: Text(
+                                  '${nomeCaixa[0].toUpperCase()}${nomeCaixa.substring(1)} (Id: $idCaixa)',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                         SizedBox(
                           height: 20,
                         ),

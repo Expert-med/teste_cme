@@ -26,28 +26,29 @@ class _instruInfo extends State<instruInfo> {
   void initState() {
     super.initState();
     buscarInstrumentais(idInstru);
+   
   }
 
-  Future<String> buscarPathImagem(String idInstru) async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection("instrumentais")
-        .where("id", isEqualTo: idInstru)
-        .get();
 
-    if (snapshot.docs.isNotEmpty) {
-      final data = snapshot.docs[0].data();
-      if (data.containsKey("imagem")) {
-        return data["imagem"];
+  Future<List<String>> searchImages(String idInstru) async {
+    final ListResult result = await storage.ref('instrumentais').listAll();
+
+    final List<String> imageUrls = [];
+
+    for (final Reference ref in result.items) {
+      final String fileName = ref.name;
+
+      if (fileName.contains('$idInstru')) {
+        final String downloadUrl = await ref.getDownloadURL();
+        imageUrls.add(downloadUrl);
+        print(downloadUrl);
       }
     }
-    throw Exception('Image path not found.');
+
+    return imageUrls;
   }
 
-  Future<String> buscarImagem(String idInstru) async {
-    String imagePath = await buscarPathImagem(idInstru);
-    final ref = storageRef.child(imagePath);
-    return await ref.getDownloadURL();
-  }
+
 
   void buscarTipoInstrumental(String idTipo) {
     print('entrou em buscarTipoInstrumental ');
@@ -220,15 +221,25 @@ class _instruInfo extends State<instruInfo> {
                       SizedBox(
                         height: 20,
                       ),
-                      Container(
+                       Container(
                         alignment: Alignment.topLeft,
-                        child: FutureBuilder(
-                          future: buscarImagem(idInstru),
-                          builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                        child: FutureBuilder<List<String>>(
+                          future: searchImages(idInstru),
+                          builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
                             if (snapshot.hasData) {
-                              return Image.network(snapshot.data!);
+                              List<String> imageUrls = snapshot.data!;
+                              // Render the images using ListView.builder
+                              return ListView.builder(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(), // Disable scrolling of the ListView.builder
+                                itemCount: imageUrls.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  String imageUrl = imageUrls[index];
+                                  return Image.network(imageUrl);
+                                },
+                              );
                             } else if (snapshot.hasError) {
-                              return Text('Erro ao carregar a imagem');
+                              return Text('Error loading image');
                             } else {
                               return CircularProgressIndicator();
                             }

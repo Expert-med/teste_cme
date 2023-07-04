@@ -2,15 +2,14 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:teste_catalogo/apenasEmbalarPage.dart';
 import 'package:teste_catalogo/catalogTeste.dart';
 import 'package:teste_catalogo/catalogTipoCaixa.dart';
+import 'package:teste_catalogo/catalogoCaixasTeste.dart';
+import 'package:teste_catalogo/catalogos/cadInsturmental.dart';
+import 'package:teste_catalogo/catalogos/formCriarCaixas.dart';
 import 'package:teste_catalogo/tipoPage.dart';
 
-import 'apenasEmbalarPage.dart';
-import 'cadInsturmental.dart';
-import 'catalogoCaixasTeste.dart';
-import 'formCriarCaixas.dart';
-import 'historicoPage.dart';
 
 class catalogPage extends StatelessWidget {
   FirebaseFirestore db = FirebaseFirestore.instance;
